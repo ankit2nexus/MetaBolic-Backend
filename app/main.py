@@ -40,17 +40,10 @@ from typing import List
 
 def get_cors_origins() -> List[str]:
     """Get CORS origins based on environment"""
-    # Production CORS origins - only allow your specific frontend domain
+    # Production CORS origins - only allow your specific Netlify frontend
     origins = [
-        "https://aquamarine-hotteok-869bf1.netlify.app",  # Your Netlify frontend
-        "http://localhost:5173",   # Local development (Vite default)
-        "http://localhost:5174",   # Local development (Vite alternative port)
-        "http://localhost:3000",   # Local development (React default)
+        "https://aquamarine-hotteok-869bf1.netlify.app",  # Your Netlify frontend (ONLY allowed origin)
     ]
-    
-    # Add custom origins from environment variable if needed
-    custom_origins = os.getenv("CORS_ORIGINS", "").split(",")
-    origins.extend([origin.strip() for origin in custom_origins if origin.strip()])
     
     return origins
 
