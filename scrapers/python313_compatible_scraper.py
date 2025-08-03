@@ -124,7 +124,7 @@ class Python313CompatibleScraper:
         
         conn.commit()
         conn.close()
-        logger.info(f"✅ Database ready at: {DB_PATH}")
+        logger.info(f"Database ready at: {DB_PATH}")
     
     def parse_rss_xml(self, xml_content: str) -> List[Dict]:
         """Parse RSS XML using only standard library"""
@@ -204,7 +204,7 @@ class Python313CompatibleScraper:
         articles = []
         
         try:
-            logger.info(f"🔍 Fetching from {source_config['name']}...")
+            logger.info(f"Fetching from {source_config['name']}...")
             
             response = self.session.get(source_config['url'], timeout=15)
             response.raise_for_status()
@@ -216,7 +216,7 @@ class Python313CompatibleScraper:
                 article['source'] = source_config['name']
                 article['priority'] = source_config['priority']
             
-            logger.info(f"✅ Found {len(articles)} articles from {source_config['name']}")
+            logger.info(f"Found {len(articles)} articles from {source_config['name']}")
             
         except Exception as e:
             logger.error(f"Error fetching from {source_config['name']}: {e}")
@@ -229,7 +229,7 @@ class Python313CompatibleScraper:
         
         for topic in self.google_news_topics[:3]:  # Limit to avoid rate limiting
             try:
-                logger.info(f"🔍 Fetching Google News for: {topic}")
+                logger.info(f"Fetching Google News for: {topic}")
                 
                 encoded_topic = quote_plus(topic)
                 url = f"https://news.google.com/rss/search?q={encoded_topic}&hl=en-US&gl=US&ceid=US:en"
@@ -251,7 +251,7 @@ class Python313CompatibleScraper:
                 logger.warning(f"Error fetching Google News for {topic}: {e}")
                 continue
         
-        logger.info(f"📰 Found {len(articles)} Google News articles")
+        logger.info(f"Found {len(articles)} Google News articles")
         return articles
     
     def is_health_related(self, title: str, summary: str) -> bool:
@@ -316,7 +316,7 @@ class Python313CompatibleScraper:
     def save_articles(self, articles: List[Dict], source_name: str) -> int:
         """Save articles to database"""
         if not articles:
-            logger.info(f"⚠️ No articles to save from {source_name}")
+            logger.info(f"No articles to save from {source_name}")
             return 0
         
         conn = sqlite3.connect(DB_PATH)
@@ -355,17 +355,17 @@ class Python313CompatibleScraper:
                 
                 if cursor.rowcount > 0:
                     saved_count += 1
-                    logger.info(f"✅ Saved: {article['title'][:60]}...")
+                    logger.info(f"Saved: {article['title'][:60]}...")
                 else:
                     duplicate_count += 1
                     
             except Exception as e:
-                logger.error(f"❌ Error saving article: {e}")
+                logger.error(f"Error saving article: {e}")
         
         conn.commit()
         conn.close()
         
-        logger.info(f"📊 {source_name}: {saved_count} saved, {duplicate_count} duplicates")
+        logger.info(f"{source_name}: {saved_count} saved, {duplicate_count} duplicates")
         return saved_count
     
     def run_scraper(self) -> int:
@@ -373,11 +373,11 @@ class Python313CompatibleScraper:
         total_saved = 0
         start_time = datetime.now()
         
-        logger.info("🌍 Python 3.13 Compatible News Scraper")
+        logger.info("Python 3.13 Compatible News Scraper")
         logger.info("=" * 50)
         
         # 1. Fetch from RSS sources
-        logger.info("\n📰 Fetching from RSS sources...")
+        logger.info("\nFetching from RSS sources...")
         for source_config in self.rss_sources:
             articles = self.fetch_rss_feed(source_config)
             saved = self.save_articles(articles, source_config['name'])
@@ -385,13 +385,13 @@ class Python313CompatibleScraper:
             time.sleep(2)  # Rate limiting
         
         # 2. Fetch from Google News
-        logger.info("\n🔍 Fetching from Google News...")
+        logger.info("\nFetching from Google News...")
         google_articles = self.fetch_google_news()
         total_saved += self.save_articles(google_articles, "Google News Health")
         
         duration = datetime.now() - start_time
         
-        logger.info(f"\n📊 Scraping Summary:")
+        logger.info(f"\nScraping Summary:")
         logger.info(f"   • Total articles saved: {total_saved}")
         logger.info(f"   • Duration: {duration.total_seconds():.1f} seconds")
         logger.info(f"   • Database: {DB_PATH}")
@@ -400,7 +400,7 @@ class Python313CompatibleScraper:
 
 def main():
     """Main function"""
-    print("🌍 Python 3.13 Compatible Health News Scraper")
+    print("Python 3.13 Compatible Health News Scraper")
     print("=" * 55)
     
     scraper = Python313CompatibleScraper()
@@ -412,14 +412,14 @@ def main():
     total_saved = scraper.run_scraper()
     
     if total_saved > 0:
-        print(f"\n🎉 Successfully scraped {total_saved} health articles!")
-        print("✅ Compatible with Python 3.13+")
-        print("\n💡 Next steps:")
+        print(f"\nSuccessfully scraped {total_saved} health articles!")
+        print("Compatible with Python 3.13+")
+        print("\nNext steps:")
         print("   1. Start the API: python start.py")
         print("   2. Visit: http://localhost:8000/articles/latest")
         print("   3. All existing endpoints work with new data!")
     else:
-        print("\n⚠️ No articles were saved. Check:")
+        print("\nNo articles were saved. Check:")
         print("   • Internet connection")
         print("   • RSS feed availability")
     

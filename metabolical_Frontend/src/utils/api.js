@@ -5,7 +5,7 @@ const getApiBaseUrl = () => {
   // Check if we're in production
   if (import.meta.env.PROD) {
     // Production API URL - replace with your actual Render backend URL
-    return import.meta.env.VITE_BACKEND_API || "https://metabolical-backend.onrender.com/api/v1";
+    return import.meta.env.VITE_BACKEND_API || "https://metabolic-backend.onrender.com/api/v1";
   } else {
     // Development API URL
     return import.meta.env.VITE_BACKEND_API || "http://localhost:8000/api/v1";

@@ -221,8 +221,14 @@ def get_articles_paginated_optimized(
                             article['source'] = "Health Information Source"
                     else:
                         article['source'] = "Health Information Source"
-                if article.get('url') is None or article.get('url') == '':
-                    article['url'] = ''  # Required field, use empty string as fallback
+                
+                # Enhanced URL validation - exclude articles with broken URLs
+                url = article.get('url', '')
+                if not url or url == '' or url == 'NULL' or any(pattern in url.lower() for pattern in ['error', '404', 'not-found', 'javascript:', 'mailto:']):
+                    # Skip articles with broken or invalid URLs
+                    logger.warning(f"Skipping article with invalid URL: {article.get('title', 'Unknown')[:50]}")
+                    continue
+                
                 if article.get('title') is None or article.get('title') == '':
                     article['title'] = 'Untitled'  # Required field
                 
