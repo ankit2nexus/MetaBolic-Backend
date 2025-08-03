@@ -40,24 +40,9 @@ from typing import List
 
 def get_cors_origins() -> List[str]:
     """Get CORS origins based on environment"""
-    # Check if we're in production (Render sets this)
-    if os.getenv("RENDER"):
-        # Production CORS origins
-        origins = [
-            "https://your-frontend-domain.com",  # Replace with your actual frontend domain
-            "https://metabolical-frontend.onrender.com",  # Example Render frontend URL
-            "https://localhost:3000",  # Local development
-            "http://localhost:3000",   # Local development
-            "https://localhost:5173",  # Vite default
-            "http://localhost:5173",   # Vite default
-        ]
-        # Add custom origins from environment variable
-        custom_origins = os.getenv("CORS_ORIGINS", "").split(",")
-        origins.extend([origin.strip() for origin in custom_origins if origin.strip()])
-        return origins
-    else:
-        # Development - allow all origins
-        return ["*"]
+    # For now, allow all origins to fix frontend connection issues
+    # In production, you should restrict this to your actual frontend domains
+    return ["*"]
 
 # Middleware
 app.add_middleware(GZipMiddleware, minimum_size=1000)
