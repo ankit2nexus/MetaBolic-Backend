@@ -6,6 +6,7 @@ Database operations and utility functions for the health articles API.
 import sqlite3
 import json
 import threading
+import re
 from typing import List, Dict, Optional, Tuple
 from datetime import datetime, timedelta
 from functools import lru_cache
@@ -138,6 +139,11 @@ def get_articles_paginated_optimized(
                     where_conditions.append("(tags LIKE ? OR tags LIKE ? OR tags LIKE ? OR tags LIKE ? OR tags LIKE ? OR tags LIKE ? OR tags LIKE ?)")
                     params.extend([f'%"{tag}"%', f'%"{tag_underscore}"%', f'%"breaking_news"%', f'%"recent_developments"%', f'%"indian_health_news"%', f'%"trending"%', f'%"smartnews_aggregated"%'])
                     logger.info(f"🏷️ Filtering by tag: '{tag}' (also checking related terms: breaking_news, recent_developments, trending, smartnews_aggregated)")
+                # Special handling for "lifestyle" - also search for related terms
+                elif tag.lower() == "lifestyle":
+                    where_conditions.append("(tags LIKE ? OR tags LIKE ? OR tags LIKE ? OR tags LIKE ? OR tags LIKE ?)")
+                    params.extend([f'%"{tag}"%', f'%"{tag_underscore}"%', f'%"lifestyle_changes"%', f'%"health_lifestyle"%', f'%"wellness"%'])
+                    logger.info(f"🏷️ Filtering by tag: '{tag}' (also checking related terms: lifestyle_changes, health_lifestyle, wellness)")
                 else:
                     where_conditions.append("(tags LIKE ? OR tags LIKE ?)")
                     params.extend([f'%"{tag}"%', f'%"{tag_underscore}"%'])
@@ -207,7 +213,14 @@ def get_articles_paginated_optimized(
                 # Clean data - handle None/NULL values for required and optional fields
                 # Ensure required fields have proper defaults if None
                 if article.get('source') is None or article.get('source') == '':
-                    article['source'] = None  # Now optional
+                    # Set a default source based on category if possible
+                    if article.get('category'):
+                        if isinstance(article['category'], str) and article['category'].lower() in ["news", "diseases", "solutions", "food"]:
+                            article['source'] = f"{article['category'].capitalize()} Information"
+                        else:
+                            article['source'] = "Health Information Source"
+                    else:
+                        article['source'] = "Health Information Source"
                 if article.get('url') is None or article.get('url') == '':
                     article['url'] = ''  # Required field, use empty string as fallback
                 if article.get('title') is None or article.get('title') == '':
@@ -227,6 +240,18 @@ def get_articles_paginated_optimized(
                     else:
                         article['summary'] = f"{title} - Health article summary."
                     logger.info(f"Generated fallback summary for article {article.get('id')}: {article['summary'][:50]}...")
+                else:
+                    # Clean summary text by removing source references
+                    summary = article['summary']
+                    if summary:
+                        # Remove source references like "Source: XYZ" or "(Source: XYZ)" from the summary
+                        import re
+                        summary = re.sub(r'\(Source:.*?\)', '', summary)
+                        summary = re.sub(r'Source:.*?(\.|$)', '', summary)
+                        summary = re.sub(r'\(From:.*?\)', '', summary)
+                        summary = re.sub(r'From:.*?(\.|$)', '', summary)
+                        summary = summary.strip()
+                        article['summary'] = summary
                 
                 # Ensure tags is always a list
                 if not article.get('tags') or article.get('tags') in ['', 'NULL', None]:
@@ -510,6 +535,74 @@ def get_all_tags() -> List[str]:
 def get_tags_cached() -> List[str]:
     """Get cached list of all tags"""
     return get_all_tags()
+
+def search_articles_optimized(
+    query: str,
+    page: int = 1,
+    limit: int = 20,
+    sort_by: str = "desc",
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None
+) -> Dict:
+    """
+    Optimized search for articles
+    """
+    return get_articles_paginated_optimized(
+        page=page,
+        limit=limit,
+        sort_by=sort_by,
+        search_query=query,
+        start_date=start_date,
+        end_date=end_date
+    )
+
+def get_all_categories() -> List[Dict]:
+    """Get all available categories with article counts"""
+    try:
+        category_stats = get_category_stats_cached()
+        categories = []
+        
+        for category, count in category_stats.items():
+            categories.append({
+                "name": category,
+                "article_count": count
+            })
+        
+        # Sort by article count descending
+        categories.sort(key=lambda x: x["article_count"], reverse=True)
+        
+        return categories
+        
+    except Exception as e:
+        logger.error(f"Error getting all categories: {e}")
+        return []
+
+def get_api_statistics() -> Dict:
+    """Get comprehensive API statistics"""
+    try:
+        stats = get_cached_stats()
+        tags = get_all_tags()
+        categories = get_all_categories()
+        
+        return {
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "statistics": {
+                **stats,
+                "total_tags": len(tags),
+                "available_categories": len(categories)
+            },
+            "categories": categories[:10],  # Top 10 categories
+            "sample_tags": tags[:20] if tags else []  # First 20 tags
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting API statistics: {e}")
+        return {
+            "status": "error",
+            "timestamp": datetime.now().isoformat(),
+            "error": str(e)
+        }
 
 # Initialize on import
 try:

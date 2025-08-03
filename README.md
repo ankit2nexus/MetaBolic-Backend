@@ -7,38 +7,90 @@ A FastAPI-based backend for health articles with search, categorization, and pag
 
 ```
 metabolical-backend/
-├── app/                    # 🚀 Main application code
-│   ├── main.py            # FastAPI application
-│   ├── utils.py           # Database utilities
-│   └── __init__.py        # Package initialization
-├── config/                # ⚙️ Configuration files
-│   └── category_keywords.yml
-├── data/                  # 💾 Database and cache
-│   └── articles.db        # SQLite database
-├── scrapers/              # 🕷️ Web scrapers
-├── tests/                 # 🧪 Test files
-├── docs/                  # 📚 Documentation
-├── start.py              # 🎯 Simple startup script
-├── requirements-clean.txt # 📦 Clean dependencies
-└── README.md             # 📖 This file
+├── app/                           # 🚀 Main application code
+│   ├── main.py                   # FastAPI application
+│   ├── utils.py                  # Database utilities
+│   ├── url_validator.py          # URL validation utilities
+│   └── __init__.py               # Package initialization
+├── config/                       # ⚙️ Configuration files
+│   ├── category_keywords.yml     # Category classification keywords
+│   ├── scraper_config.py         # Scraper configuration
+│   └── __init__.py               # Package initialization
+├── data/                         # 💾 Database and cache
+│   └── articles.db               # SQLite database
+├── scrapers/                     # 🕷️ Web scrapers
+│   ├── comprehensive_news_scraper.py     # Main news scraper
+│   ├── python313_compatible_scraper.py  # Python 3.13 compatible scraper
+│   ├── simple_health_scraper.py         # Simple health articles scraper
+│   ├── smart_news_aggregator.py         # Smart news aggregation
+│   ├── social_media_scraper.py          # Social media content scraper
+│   └── __init__.py                      # Package initialization
+├── docs/                         # 📚 Documentation
+│   ├── ALL_ENDPOINTS.md          # Complete API endpoints reference
+│   ├── Endpoint.md               # Endpoint documentation
+│   ├── PERFORMANCE_IMPROVEMENTS.md # Performance optimization guide
+│   ├── SEARCH_ENDPOINTS.md       # Search functionality documentation
+│   └── SMARTNEWS_AGGREGATION.md  # Smart news aggregation documentation
+├── start.py                      # 🎯 Simple startup script
+├── stop.py                       # 🛑 Server shutdown script
+├── requirements.txt              # 📦 Project dependencies
+└── README.md                     # 📖 This file
 ```
 
 ## 🚀 Quick Start
 
 ### 1. Install Dependencies
 ```bash
-pip install -r requirements-clean.txt
+pip install -r requirements.txt
 ```
 
-### 2. Start the Server
+### 2. Configure for Public Deployment (Optional)
 ```bash
-python start.py
+# Copy example environment file
+cp .env.example .env
+
+# Edit .env file with your configuration
+# Set PORT=80 for standard web port
+# Set PUBLIC_URL=https://yourdomain.com for your domain
 ```
 
-### 3. Access the API
+### 3. Start the Server
+
+#### Local Development:
+```bash
+# Normal mode (default port 8000)
+python start.py --port 8000
+
+# Debug mode with detailed logging
+python start.py --debug --port 8000
+```
+
+#### Public Deployment:
+```bash
+# Production mode on port 80
+python start.py --port 80 --public-url https://yourdomain.com
+
+# With environment variables
+PORT=80 PUBLIC_URL=https://yourdomain.com python start.py
+```
+
+### 4. Stop the Server
+```bash
+# Use the stop script to gracefully shutdown
+python stop.py
+```
+
+### 5. Access the API
+
+#### Local Development:
 - **API Base URL**: http://localhost:8000
 - **Interactive Docs**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
+
+#### Public Deployment:
+- **API Base URL**: https://yourdomain.com
+- **Interactive Docs**: https://yourdomain.com/docs
+- **ReDoc**: https://yourdomain.com/redoc
 
 ## 📋 API Endpoints
 
@@ -106,27 +158,34 @@ curl "http://localhost:8000/api/v1/articles/latest?limit=5"
 ✅ **Clear directories** - Organized by function  
 ✅ **Simple startup** - One command to run  
 ✅ **Clean dependencies** - Only essential packages  
+✅ **Multiple scrapers** - Comprehensive data collection  
+✅ **Complete documentation** - Well-documented API endpoints  
 
-### What Was Cleaned Up
-❌ Removed: `main_fast.py`, `main_lightning.py`, `main_backup.py`  
-❌ Removed: `utils_fast.py`, `utils_backup.py`, `utils_original.py`  
-❌ Removed: `backup_20250729_145944/` folder  
-❌ Removed: Multiple optimization and performance files  
-❌ Removed: Complex startup scripts  
+### Available Scrapers
+- **comprehensive_news_scraper.py** - Main news article scraper
+- **python313_compatible_scraper.py** - Python 3.13 compatible scraper
+- **simple_health_scraper.py** - Focused health article scraper
+- **smart_news_aggregator.py** - Intelligent news aggregation
+- **social_media_scraper.py** - Social media content extraction
 
 ### Configuration
 - **Database**: SQLite database in `data/articles.db`
 - **Categories**: Configured in `config/category_keywords.yml`
-- **Logging**: INFO level by default
+- **Scraper Settings**: Configured in `config/scraper_config.py`
+- **Logging**: INFO level by default (DEBUG with --debug flag)
 - **CORS**: Enabled for all origins (development)
 
 ## 🧪 Testing
 
+For comprehensive API testing and verification, refer to the documentation:
+- **Complete Endpoints**: See `docs/ALL_ENDPOINTS.md` for all available endpoints
+- **Search Documentation**: Check `docs/SEARCH_ENDPOINTS.md` for search functionality
+- **Performance Guide**: Review `docs/PERFORMANCE_IMPROVEMENTS.md` for optimization details
+
 ```bash
-# Run tests
-cd tests
-python final_verification_test.py
-python test_endpoints.py
+# Test the API manually
+curl "http://localhost:8000/api/v1/health"
+curl "http://localhost:8000/api/v1/stats"
 ```
 
 ## 📝 Available Categories
@@ -143,11 +202,23 @@ python test_endpoints.py
 ### Common Issues
 
 1. **Database not found**: Make sure `data/articles.db` exists
-2. **Port already in use**: Change port in `start.py` or kill existing process
-3. **Import errors**: Install dependencies with `pip install -r requirements-clean.txt`
+2. **Port already in use**: Change port in `start.py` or kill existing process with `python stop.py`
+3. **Import errors**: Install dependencies with `pip install -r requirements.txt`
+4. **Scraper issues**: Check `config/scraper_config.py` for scraper settings
 
 ### Logs
 Check the console output for detailed error messages and performance information.
+
+### Graceful Shutdown
+Use `python stop.py` to properly shutdown the server and clean up resources.
+
+## 📚 Documentation
+
+For detailed information about the API, please refer to:
+- **`docs/ALL_ENDPOINTS.md`** - Complete list of all API endpoints
+- **`docs/SEARCH_ENDPOINTS.md`** - Search functionality documentation  
+- **`docs/PERFORMANCE_IMPROVEMENTS.md`** - Performance optimization guide
+- **`docs/SMARTNEWS_AGGREGATION.md`** - Smart news aggregation details
 
 ## 📈 Performance Features
 
@@ -159,4 +230,4 @@ Check the console output for detailed error messages and performance information
 
 ---
 
-**🎯 This simplified structure makes the project much easier to understand, maintain, and extend while preserving all functionality.**
+**🎯 This project provides a clean, well-documented health articles API with comprehensive scraping capabilities and excellent documentation for easy understanding and maintenance.**

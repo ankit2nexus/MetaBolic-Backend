@@ -42,22 +42,22 @@ class SmartNewsAggregator:
                 "description": "RSS feeds from WHO, NIH, Reuters, CNN, BBC, Google News (Python 3.13 compatible)"
             },
             {
-                "name": "Enhanced Health Scraper", 
-                "file": "enhanced_health_scraper.py",
+                "name": "Comprehensive News Scraper",
+                "file": "comprehensive_news_scraper.py",
                 "priority": 2,
-                "description": "URL-validated health-specific content"
+                "description": "Comprehensive news from multiple sources"
             },
             {
-                "name": "Indian Health Scraper",
-                "file": "indian_health_scraper.py", 
-                "priority": 2,
-                "description": "Indian health news sources"
-            },
-            {
-                "name": "Google News Scraper",
-                "file": "gnews_scraper.py",
+                "name": "Social Media Scraper",
+                "file": "social_media_scraper.py",
                 "priority": 3,
-                "description": "Google News health content (if feedparser works)"
+                "description": "Social media and alternative health news sources"
+            },
+            {
+                "name": "Simple Health Scraper",
+                "file": "simple_health_scraper.py",
+                "priority": 3,
+                "description": "Basic health news scraper"
             }
         ]
         
