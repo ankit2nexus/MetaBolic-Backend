@@ -36,16 +36,10 @@ class SmartNewsAggregator:
         # Define scraper execution order (priority-based)
         self.scraper_sequence = [
             {
-                "name": "Python 3.13 Compatible Scraper",
-                "file": "python313_compatible_scraper.py",
+                "name": "Master Health Scraper",
+                "file": "master_health_scraper.py",
                 "priority": 1,
-                "description": "RSS feeds from WHO, NIH, Reuters, CNN, BBC, Google News (Python 3.13 compatible)"
-            },
-            {
-                "name": "Comprehensive News Scraper",
-                "file": "comprehensive_news_scraper.py",
-                "priority": 2,
-                "description": "Comprehensive news from multiple sources"
+                "description": "Unified scraper for all RSS feeds, news sources, and health content"
             },
             {
                 "name": "Social Media Scraper",
