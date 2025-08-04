@@ -42,7 +42,8 @@ def get_cors_origins() -> List[str]:
     """Get CORS origins based on environment"""
     # Production CORS origins - only allow your specific Netlify frontend
     origins = [
-        "metabolical.in",
+        "https://metabolical.in",
+        "https://www.metabolical.in"
     ]
     
     return origins
