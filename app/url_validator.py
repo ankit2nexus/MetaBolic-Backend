@@ -36,11 +36,42 @@ class URLValidator:
         if not url:
             return False, {"error": "No URL provided", "status": "invalid"}
         
-        # Basic URL format validation
+        # Enhanced URL validation with stricter checks
         try:
             parsed = urlparse(url)
             if not parsed.scheme or not parsed.netloc:
                 return False, {"error": "Invalid URL format", "status": "invalid"}
+            
+            # Check for problematic domains and patterns
+            domain = parsed.netloc.lower()
+            path = parsed.path.lower()
+            
+            # Reject example domains and test domains
+            invalid_domains = [
+                'example.com', 'example.org', 'example.net',
+                'test.com', 'test.org', 'localhost',
+                'domain.com', 'sample.com', 'dummy.com'
+            ]
+            
+            for invalid_domain in invalid_domains:
+                if invalid_domain in domain:
+                    return False, {"error": f"Invalid domain: {domain}", "status": "invalid"}
+            
+            # Reject problematic URL patterns
+            invalid_patterns = [
+                'javascript:', 'mailto:', 'file:', 'ftp:',
+                '/404', '/error', '/not-found',
+                '?error=', '&error=', '#error'
+            ]
+            
+            for pattern in invalid_patterns:
+                if pattern in url.lower():
+                    return False, {"error": f"Invalid URL pattern: {pattern}", "status": "invalid"}
+            
+            # Check if it's a Google News RSS URL (these often don't work for direct access)
+            if 'google.com/rss/articles/' in url:
+                return False, {"error": "Google News RSS URLs are not accessible", "status": "invalid"}
+                
         except Exception:
             return False, {"error": "URL parsing failed", "status": "invalid"}
         
@@ -61,23 +92,26 @@ class URLValidator:
                 }
                 
         except requests.exceptions.Timeout:
-            # Don't fail on timeout, just mark as potentially valid
-            return True, {
-                "status": "valid_timeout",
-                "note": "URL accessible but response was slow"
-            }
+            # For timeout, check if the URL format looks legitimate
+            if any(valid_domain in domain for valid_domain in ['reuters.com', 'cnn.com', 'bbc.com', 'who.int', 'nih.gov', 'webmd.com', 'mayoclinic.org']):
+                return True, {
+                    "status": "valid_timeout",
+                    "note": "URL from trusted domain but response was slow"
+                }
+            else:
+                return False, {"error": "Timeout on unknown domain", "status": "invalid"}
         except requests.exceptions.RequestException as e:
-            # For network errors, don't fail completely - the URL might be valid
-            return True, {
-                "status": "valid_network_error", 
-                "note": f"Network error but URL format is valid: {str(e)[:100]}"
-            }
+            # For network errors, only accept if from trusted domains
+            if any(valid_domain in domain for valid_domain in ['reuters.com', 'cnn.com', 'bbc.com', 'who.int', 'nih.gov', 'webmd.com', 'mayoclinic.org']):
+                return True, {
+                    "status": "valid_network_error", 
+                    "note": f"Network error but URL from trusted domain: {str(e)[:100]}"
+                }
+            else:
+                return False, {"error": f"Network error on untrusted domain: {str(e)[:100]}", "status": "invalid"}
         except Exception as e:
             logger.warning(f"URL validation error for {url}: {e}")
-            return True, {
-                "status": "valid_unknown_error",
-                "note": "Validation error but assuming URL is valid"
-            }
+            return False, {"error": f"Validation error: {str(e)[:100]}", "status": "invalid"}
     
     def is_health_related_url(self, url: str) -> bool:
         """Check if URL is from a health-related domain"""

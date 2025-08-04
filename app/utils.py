@@ -27,7 +27,7 @@ if not Path(DB_PATH).exists():
     DB_PATH = str(Path(__file__).parent.parent / "db" / "articles.db")
 
 # Category keywords file path - updated to use new unified config
-CATEGORY_YAML_PATH = Path(__file__).parent.parent / "config" / "health_categories.yml"
+CATEGORY_YAML_PATH = Path(__file__).parent / "health_categories.yml"
 
 # Simple connection pool
 class SQLiteConnectionPool:
@@ -50,6 +50,50 @@ class SQLiteConnectionPool:
 
 # Global connection pool
 connection_pool = SQLiteConnectionPool(DB_PATH)
+
+def is_valid_article_url(url: str) -> bool:
+    """
+    Check if an article URL is valid and accessible
+    
+    Args:
+        url: The URL to validate
+        
+    Returns:
+        bool: True if URL is valid, False otherwise
+    """
+    if not url or url == '' or url == 'NULL':
+        return False
+    
+    # Check for problematic URL patterns
+    invalid_url_patterns = [
+        'example.com', 'example.org', 'example.net',
+        'domain.com', 'test.com', 'localhost',
+        'javascript:', 'mailto:', 'file:', 'ftp:',
+        '404', 'not-found', 'error',
+        'google.com/rss/articles/',
+        'dummy.com', 'sample.com'
+    ]
+    
+    url_lower = url.lower()
+    for pattern in invalid_url_patterns:
+        if pattern in url_lower:
+            return False
+    
+    # Check if URL has proper format
+    try:
+        from urllib.parse import urlparse
+        parsed = urlparse(url)
+        if not parsed.scheme or not parsed.netloc:
+            return False
+        
+        # Must be HTTP or HTTPS
+        if parsed.scheme not in ['http', 'https']:
+            return False
+            
+    except Exception:
+        return False
+    
+    return True
 
 # Cache for category keywords
 _category_cache = {}
@@ -224,9 +268,8 @@ def get_articles_paginated_optimized(
                 
                 # Enhanced URL validation - exclude articles with broken URLs
                 url = article.get('url', '')
-                if not url or url == '' or url == 'NULL' or any(pattern in url.lower() for pattern in ['error', '404', 'not-found', 'javascript:', 'mailto:']):
-                    # Skip articles with broken or invalid URLs
-                    logger.warning(f"Skipping article with invalid URL: {article.get('title', 'Unknown')[:50]}")
+                if not is_valid_article_url(url):
+                    logger.warning(f"Skipping article with invalid URL: {url} - Title: {article.get('title', 'Unknown')[:50]}")
                     continue
                 
                 if article.get('title') is None or article.get('title') == '':

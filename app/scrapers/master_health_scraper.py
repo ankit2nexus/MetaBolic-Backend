@@ -29,7 +29,7 @@ import feedparser
 from bs4 import BeautifulSoup
 
 # Add project root to path
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(BASE_DIR))
 
 # Import our URL validator
@@ -169,9 +169,10 @@ class MasterHealthScraper:
                 'read_time': max(3, len(description.split()) // 200)  # Estimate read time
             }
             
-            # Validate URL
-            is_valid, _ = self.url_validator.validate_article_url(article)
+            # Validate URL more strictly
+            is_valid, validation_info = self.url_validator.validate_article_url(article)
             if not is_valid:
+                logger.warning(f"Skipping article with invalid URL: {url} - {validation_info.get('error', 'Unknown error')}")
                 return None
                 
             return article
@@ -219,7 +220,13 @@ class MasterHealthScraper:
                             'author': '',
                             'read_time': max(3, len(description.split()) // 200)
                         }
-                        articles.append(article)
+                        
+                        # Validate URL before adding
+                        is_valid, validation_info = self.url_validator.validate_article_url(article)
+                        if is_valid:
+                            articles.append(article)
+                        else:
+                            logger.warning(f"Skipping article with invalid URL in manual parse: {url} - {validation_info.get('error', 'Unknown error')}")
         
         except Exception as e:
             logger.error(f"Manual parsing failed for {source['name']}: {e}")
@@ -243,7 +250,13 @@ class MasterHealthScraper:
                     
                     if article:
                         article['tags'] = f"{article['tags']},{keyword}" if article['tags'] else keyword
-                        articles.append(article)
+                        
+                        # Double-check URL validation for Google News articles
+                        is_valid, validation_info = self.url_validator.validate_article_url(article)
+                        if is_valid:
+                            articles.append(article)
+                        else:
+                            logger.warning(f"Skipping Google News article with invalid URL: {article.get('url')} - {validation_info.get('error', 'Unknown error')}")
                 
                 time.sleep(1)  # Rate limiting
                 
