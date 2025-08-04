@@ -158,7 +158,7 @@ class MasterHealthScraper:
             # Create article object
             article = {
                 'title': title,
-                'description': self._clean_html(description)[:500],
+                'summary': self._clean_html(description)[:500],  # Changed from 'description' to 'summary'
                 'url': url,
                 'published_date': published_date,
                 'source': source['name'],
@@ -210,7 +210,7 @@ class MasterHealthScraper:
                     if title and url:
                         article = {
                             'title': title,
-                            'description': description[:500],
+                            'summary': description[:500],  # Changed from 'description' to 'summary'
                             'url': url,
                             'published_date': pub_date,
                             'source': source['name'],
@@ -355,11 +355,11 @@ class MasterHealthScraper:
                 try:
                     conn.execute("""
                         INSERT OR IGNORE INTO articles 
-                        (title, description, url, published_date, source, category, tags, image_url, author, read_time)
+                        (title, summary, url, published_date, source, category, tags, image_url, author, read_time)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, (
                         article['title'],
-                        article['description'],
+                        article['summary'],  # Changed from 'description' to 'summary'
                         article['url'],
                         article['published_date'],
                         article['source'],

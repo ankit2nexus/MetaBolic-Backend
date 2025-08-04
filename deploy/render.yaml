@@ -15,7 +15,7 @@ services:
       - key: RENDER
         value: true
       - key: CORS_ORIGINS
-        value: "https://your-frontend-domain.com,https://localhost:3000,http://localhost:3000,https://localhost:5173,http://localhost:5173"
+        value: "https://metabolical.in,https://www.metabolical.in,https://localhost:3000,http://localhost:3000,https://localhost:5173,http://localhost:5173"
     healthCheckPath: /api/v1/health
     plan: starter  # Change to 'standard' or higher for production
     autoDeploy: true
