@@ -16,6 +16,15 @@ httpx==0.25.2
 # Production server enhancements
 gunicorn==21.2.0
 
+# Scheduling and background tasks
+apscheduler==3.10.4
+
+# Web scraping dependencies
+requests==2.31.0
+beautifulsoup4==4.12.2
+feedparser==6.0.10
+lxml==4.9.3
+
 # Development and testing (optional)
 pytest==7.4.3
 pytest-asyncio==0.21.1

@@ -12,6 +12,7 @@ from datetime import datetime
 from typing import List, Optional, Dict
 import logging
 from pathlib import Path
+import asyncio
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -20,10 +21,12 @@ logger = logging.getLogger(__name__)
 # Import utilities
 try:
     from .utils import *
+    from .scheduler import health_scheduler
 except ImportError:
     import sys
     sys.path.append(str(Path(__file__).parent))
     from utils import *
+    from scheduler import health_scheduler
 
 # FastAPI app
 app = FastAPI(
@@ -33,6 +36,31 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# Startup and shutdown event handlers
+@app.on_event("startup")
+async def startup_event():
+    """Initialize the application and start background scheduler"""
+    logger.info("🚀 Starting Metabolical Backend API...")
+    
+    # Start the background scheduler
+    try:
+        health_scheduler.start_scheduler()
+        logger.info("✅ Background scheduler started successfully")
+    except Exception as e:
+        logger.error(f"❌ Failed to start background scheduler: {e}")
+
+@app.on_event("shutdown") 
+async def shutdown_event():
+    """Clean shutdown of the application"""
+    logger.info("🛑 Shutting down Metabolical Backend API...")
+    
+    # Stop the background scheduler
+    try:
+        health_scheduler.stop_scheduler()
+        logger.info("✅ Background scheduler stopped successfully")
+    except Exception as e:
+        logger.error(f"❌ Error stopping background scheduler: {e}")
 
 # Configure CORS based on environment
 import os
@@ -355,6 +383,36 @@ def health_check():
                 "error": str(e)
             }
         )
+
+@v1_router.get("/scheduler/status")
+def get_scheduler_status():
+    """Get status of background scheduler"""
+    try:
+        jobs = health_scheduler.get_scheduled_jobs()
+        return {
+            "status": "running" if health_scheduler.is_running else "stopped",
+            "timestamp": datetime.now().isoformat(),
+            "scheduled_jobs": jobs,
+            "total_jobs": len(jobs)
+        }
+    except Exception as e:
+        logger.error(f"Error getting scheduler status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@v1_router.post("/scheduler/trigger-scraper")
+async def trigger_scraper_manually():
+    """Manually trigger the health news scraper"""
+    try:
+        logger.info("🚀 Manual scraper trigger requested via API")
+        result = await health_scheduler.run_scraper_now()
+        return {
+            "status": "completed",
+            "timestamp": datetime.now().isoformat(),
+            "result": result
+        }
+    except Exception as e:
+        logger.error(f"Error triggering scraper: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @v1_router.get("/categories")
 def get_categories():
