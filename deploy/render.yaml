@@ -2,7 +2,7 @@ services:
   - type: web
     name: metabolical-backend
     env: docker
-    repo: https://github.com/ankit21311/BackEnd-Nexus3p.org
+    repo: https://github.com/ankit21311/METABOLIC_BACKEND
     branch: main
     dockerfilePath: ./Dockerfile
     envVars:
