@@ -169,9 +169,10 @@ def get_articles_paginated_optimized(
                 
             if category:
                 # Since categories is stored as JSON array, we need to search within it
-                where_conditions.append("categories LIKE ?")
-                params.append(f'%"{category}"%')
-                logger.info(f"🔍 Filtering by category: '{category}'")
+                # Handle case-insensitive matching for better user experience
+                where_conditions.append("(categories LIKE ? OR categories LIKE ?)")
+                params.extend([f'%"{category}"%', f'%"{category.capitalize()}"%'])
+                logger.info(f"🔍 Filtering by category: '{category}' (also checking '{category.capitalize()}')")
                 
             if tag:
                 # Since tags is stored as JSON array, we need to search within it

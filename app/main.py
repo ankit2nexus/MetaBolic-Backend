@@ -68,7 +68,7 @@ from typing import List
 
 def get_cors_origins() -> List[str]:
     """Get CORS origins based on environment"""
-    # Production CORS origins - only allow your specific Netlify frontend
+    # Production CORS origins - only allow your specific frontend domains
     origins = [
         "https://metabolical.in",
         "https://www.metabolical.in"
