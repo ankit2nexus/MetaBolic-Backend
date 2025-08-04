@@ -26,8 +26,8 @@ DB_PATH = str(Path(__file__).parent.parent / "data" / "articles.db")
 if not Path(DB_PATH).exists():
     DB_PATH = str(Path(__file__).parent.parent / "db" / "articles.db")
 
-# Category keywords file path
-CATEGORY_YAML_PATH = Path(__file__).parent.parent / "config" / "category_keywords.yml"
+# Category keywords file path - updated to use new unified config
+CATEGORY_YAML_PATH = Path(__file__).parent.parent / "config" / "health_categories.yml"
 
 # Simple connection pool
 class SQLiteConnectionPool:

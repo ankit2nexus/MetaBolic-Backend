@@ -13,7 +13,7 @@ metabolical-backend/
 │   ├── url_validator.py          # URL validation utilities
 │   └── __init__.py               # Package initialization
 ├── config/                       # ⚙️ Configuration files
-│   ├── category_keywords.yml     # Category classification keywords
+│   ├── health_categories.yml     # Unified health category classification keywords
 │   ├── scraper_config.py         # Scraper configuration
 │   └── __init__.py               # Package initialization
 ├── data/                         # 💾 Database and cache
@@ -170,7 +170,7 @@ curl "http://localhost:8000/api/v1/articles/latest?limit=5"
 
 ### Configuration
 - **Database**: SQLite database in `data/articles.db`
-- **Categories**: Configured in `config/category_keywords.yml`
+- **Categories**: Configured in `config/health_categories.yml`
 - **Scraper Settings**: Configured in `config/scraper_config.py`
 - **Logging**: INFO level by default (DEBUG with --debug flag)
 - **CORS**: Enabled for all origins (development)
