@@ -280,30 +280,125 @@ def get_articles_paginated_optimized(
                     if article.get(optional_field) == '' or article.get(optional_field) == 'NULL':
                         article[optional_field] = None
                 
-                # Special handling for summary - ensure it's never empty
-                if not article.get('summary') or article.get('summary') in ['', 'NULL', None]:
-                    # Generate a fallback summary from the title
+                # Special handling for summary - ensure it's never empty and meaningful
+                summary = article.get('summary', '').strip()
+                
+                # Check if summary is empty, too short, or generic
+                needs_fallback = (
+                    not summary or 
+                    summary in ['', 'NULL', None] or 
+                    len(summary) < 20 or
+                    summary.lower() in ['recent developments', 'health news', 'breaking news'] or
+                    'health article summary' in summary.lower()
+                )
+                
+                if needs_fallback:
+                    # Generate a more meaningful fallback summary based on title and category
                     title = article.get('title', 'Health Article')
-                    if len(title) > 100:
-                        article['summary'] = title[:97] + "..."
+                    category = article.get('category', 'health')
+                    source = article.get('source', 'Health News')
+                    
+                    # Create a more descriptive summary
+                    if 'diabetes' in title.lower():
+                        article['summary'] = f"Latest insights on diabetes management and treatment options from {source}."
+                    elif 'heart' in title.lower() or 'cardiovascular' in title.lower():
+                        article['summary'] = f"Important developments in heart health and cardiovascular care from {source}."
+                    elif 'nutrition' in title.lower() or 'diet' in title.lower():
+                        article['summary'] = f"New findings on nutrition and dietary recommendations from {source}."
+                    elif 'mental health' in title.lower():
+                        article['summary'] = f"Mental health insights and wellness strategies from {source}."
+                    elif 'covid' in title.lower() or 'pandemic' in title.lower():
+                        article['summary'] = f"COVID-19 updates and public health information from {source}."
+                    elif 'research' in title.lower() or 'study' in title.lower():
+                        article['summary'] = f"New medical research findings and healthcare study results from {source}."
                     else:
-                        article['summary'] = f"{title} - Health article summary."
-                    logger.info(f"Generated fallback summary for article {article.get('id')}: {article['summary'][:50]}...")
+                        # Generic but more informative fallback
+                        if len(title) > 80:
+                            article['summary'] = f"{title[:77]}... - Read more about this health development from {source}."
+                        else:
+                            article['summary'] = f"Important health news: {title}. Stay informed with the latest from {source}."
+                    
+                    logger.info(f"Generated enhanced fallback summary for article {article.get('id')}: {article['summary'][:50]}...")
                 else:
-                    # Clean summary text by removing source references
-                    summary = article['summary']
+                    # Clean and enhance existing summary
                     if summary:
-                        # Remove source references like "Source: XYZ" or "(Source: XYZ)" from the summary
                         import re
+                        # Remove source references like "Source: XYZ" or "(Source: XYZ)" from the summary
                         summary = re.sub(r'\(Source:.*?\)', '', summary)
                         summary = re.sub(r'Source:.*?(\.|$)', '', summary)
                         summary = re.sub(r'\(From:.*?\)', '', summary)
                         summary = re.sub(r'From:.*?(\.|$)', '', summary)
+                        
+                        # Clean up generic phrases
+                        summary = re.sub(r'recent developments?\.?', 'new updates', summary, flags=re.IGNORECASE)
+                        summary = re.sub(r'breaking news\.?', 'latest information', summary, flags=re.IGNORECASE)
+                        
+                        # Ensure proper sentence ending
                         summary = summary.strip()
+                        if summary and not summary.endswith(('.', '!', '?', '...')):
+                            summary += '.'
+                        
                         article['summary'] = summary
                 
-                # Ensure tags is always a list
-                if not article.get('tags') or article.get('tags') in ['', 'NULL', None]:
+                # Ensure tags is always a meaningful list
+                tags = article.get('tags', '')
+                if not tags or tags in ['', 'NULL', None] or tags.lower() in ['recent developments', 'general']:
+                    # Generate meaningful tags based on title and content
+                    title = article.get('title', '').lower()
+                    category = article.get('category', '').lower()
+                    source = article.get('source', '').lower()
+                    
+                    generated_tags = []
+                    
+                    # Health condition tags
+                    if any(word in title for word in ['diabetes', 'diabetic']):
+                        generated_tags.extend(['diabetes', 'blood sugar', 'endocrinology'])
+                    if any(word in title for word in ['heart', 'cardiac', 'cardiovascular']):
+                        generated_tags.extend(['heart health', 'cardiovascular', 'cardiology'])
+                    if any(word in title for word in ['mental health', 'depression', 'anxiety']):
+                        generated_tags.extend(['mental health', 'wellness', 'psychology'])
+                    if any(word in title for word in ['nutrition', 'diet', 'food']):
+                        generated_tags.extend(['nutrition', 'diet', 'healthy eating'])
+                    if any(word in title for word in ['cancer', 'tumor', 'oncology']):
+                        generated_tags.extend(['cancer', 'oncology', 'treatment'])
+                    if any(word in title for word in ['covid', 'coronavirus', 'pandemic']):
+                        generated_tags.extend(['covid-19', 'pandemic', 'public health'])
+                    if any(word in title for word in ['vaccine', 'vaccination', 'immunization']):
+                        generated_tags.extend(['vaccination', 'immunization', 'prevention'])
+                    
+                    # Research and news type tags
+                    if any(word in title for word in ['study', 'research', 'trial']):
+                        generated_tags.append('medical research')
+                    if any(word in title for word in ['breakthrough', 'discovery']):
+                        generated_tags.append('breakthrough research')
+                    if any(word in title for word in ['treatment', 'therapy']):
+                        generated_tags.append('treatment')
+                    if any(word in title for word in ['prevention', 'preventive']):
+                        generated_tags.append('prevention')
+                    
+                    # Source-based tags
+                    if 'who' in source:
+                        generated_tags.append('global health')
+                    if 'cdc' in source or 'nih' in source:
+                        generated_tags.append('public health')
+                    
+                    # Category-based fallback
+                    if not generated_tags:
+                        if 'health' in category:
+                            generated_tags = ['health news', 'wellness']
+                        elif 'medical' in category:
+                            generated_tags = ['medical news', 'healthcare']
+                        else:
+                            generated_tags = ['health', 'news']
+                    
+                    # Convert to string format that the database expects
+                    article['tags'] = ', '.join(list(set(generated_tags)))
+                elif isinstance(tags, str):
+                    # Clean existing tags
+                    tags = tags.replace('recent developments', 'health updates')
+                    tags = tags.replace('general', 'health news')
+                    article['tags'] = tags
+                else:
                     article['tags'] = []
                 
                 # Parse categories if they're stored as JSON string
