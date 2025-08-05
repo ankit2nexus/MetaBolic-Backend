@@ -29,6 +29,252 @@ if not Path(DB_PATH).exists():
 # Category keywords file path - updated to use new unified config
 CATEGORY_YAML_PATH = Path(__file__).parent / "health_categories.yml"
 
+# Enhanced keyword mapping for better categorization
+ENHANCED_KEYWORDS = {
+    # NEWS CATEGORY
+    "latest": [
+        "breaking", "news", "recent", "update", "new study", "latest research",
+        "announced", "report", "findings", "discovers", "reveals", "shows",
+        "breakthrough", "development", "alert", "warning", "advisory"
+    ],
+    "policy and regulation": [
+        "policy", "regulation", "law", "guideline", "standard", "rule",
+        "government", "federal", "state", "ministry", "department",
+        "FDA", "WHO", "CDC", "health department", "public health",
+        "mandate", "requirement", "compliance", "approval"
+    ],
+    "govt schemes": [
+        "scheme", "program", "initiative", "plan", "campaign",
+        "government program", "health program", "public health initiative",
+        "healthcare scheme", "medical scheme", "insurance", "coverage"
+    ],
+    "international": [
+        "global", "international", "worldwide", "WHO", "world health",
+        "pandemic", "epidemic", "outbreak", "country", "nation",
+        "cross-border", "multinational", "universal"
+    ],
+    
+    # DISEASES CATEGORY - Enhanced with symptoms and related terms
+    "diabetes": [
+        "diabetes", "diabetic", "blood sugar", "glucose", "insulin",
+        "hyperglycemia", "hypoglycemia", "type 1", "type 2", "gestational",
+        "prediabetes", "insulin resistance", "blood glucose", "diabetic complications",
+        "glycemic", "metformin", "glucometer", "A1C", "hemoglobin"
+    ],
+    "obesity": [
+        "obesity", "obese", "overweight", "weight loss", "weight gain",
+        "BMI", "body mass index", "adipose", "fat", "bariatric",
+        "metabolic syndrome", "weight management", "calorie", "portion"
+    ],
+    "inflammation": [
+        "inflammation", "inflammatory", "inflamed", "swelling", "arthritis",
+        "rheumatoid", "joint pain", "autoimmune", "immune system",
+        "cytokine", "anti-inflammatory", "chronic inflammation"
+    ],
+    "cardiovascular": [
+        "heart", "cardiac", "cardiovascular", "coronary", "artery",
+        "blood pressure", "hypertension", "cholesterol", "stroke",
+        "heart attack", "heart disease", "angina", "heart failure",
+        "atherosclerosis", "cardiology", "ECG", "EKG"
+    ],
+    "liver": [
+        "liver", "hepatic", "hepatitis", "cirrhosis", "fatty liver",
+        "liver disease", "liver function", "bile", "jaundice",
+        "liver enzymes", "hepatology"
+    ],
+    "kidney": [
+        "kidney", "renal", "nephrology", "kidney disease", "dialysis",
+        "kidney stones", "kidney failure", "creatinine", "urea",
+        "nephritis", "chronic kidney disease"
+    ],
+    "thyroid": [
+        "thyroid", "hypothyroid", "hyperthyroid", "thyroiditis",
+        "goiter", "TSH", "T3", "T4", "thyroid hormone",
+        "endocrine", "metabolism"
+    ],
+    "metabolic": [
+        "metabolic", "metabolism", "metabolic syndrome", "endocrine",
+        "hormone", "hormonal", "gland", "adrenal", "pituitary"
+    ],
+    "sleep disorders": [
+        "sleep", "insomnia", "sleep apnea", "sleep disorder",
+        "circadian", "melatonin", "sleep quality", "sleep patterns",
+        "restless leg", "narcolepsy", "sleep study"
+    ],
+    "skin": [
+        "skin", "dermatology", "dermatitis", "eczema", "psoriasis",
+        "acne", "rash", "skin cancer", "melanoma", "dermatologist",
+        "skincare", "complexion"
+    ],
+    "eyes and ears": [
+        "eye", "vision", "ophthalmology", "glaucoma", "cataract",
+        "macular degeneration", "ear", "hearing", "audiology",
+        "tinnitus", "hearing loss", "ENT", "otolaryngology"
+    ],
+    "reproductive health": [
+        "reproductive", "fertility", "pregnancy", "menstruation",
+        "menopause", "contraception", "gynecology", "obstetrics",
+        "sexual health", "hormone therapy", "PCOS", "endometriosis"
+    ],
+    
+    # SOLUTIONS CATEGORY
+    "nutrition": [
+        "nutrition", "nutritional", "nutrient", "vitamin", "mineral",
+        "diet", "dietary", "food", "eating", "meal", "supplement",
+        "protein", "carbohydrate", "fat", "fiber", "antioxidant"
+    ],
+    "fitness": [
+        "fitness", "exercise", "workout", "physical activity", "gym",
+        "training", "cardio", "strength", "aerobic", "yoga",
+        "pilates", "running", "walking", "swimming", "sports"
+    ],
+    "lifestyle": [
+        "lifestyle", "healthy living", "wellness", "habit", "routine",
+        "stress management", "work-life balance", "mindfulness",
+        "self-care", "healthy choices", "behavior change"
+    ],
+    "wellness": [
+        "wellness", "wellbeing", "holistic", "mind-body", "spiritual",
+        "meditation", "relaxation", "balance", "harmony", "peace"
+    ],
+    "prevention": [
+        "prevention", "preventive", "screening", "early detection",
+        "vaccine", "immunization", "checkup", "prophylaxis",
+        "risk reduction", "health maintenance"
+    ],
+    
+    # FOOD CATEGORY - Enhanced
+    "natural food": [
+        "natural", "organic", "whole food", "unprocessed", "fresh",
+        "raw", "clean eating", "farm-to-table", "locally sourced",
+        "seasonal", "pesticide-free", "chemical-free"
+    ],
+    "organic food": [
+        "organic", "organic food", "certified organic", "organic farming",
+        "organic produce", "non-GMO", "sustainable", "eco-friendly",
+        "biodynamic", "organic certification", "natural", "whole food"
+    ],
+    "processed food": [
+        "processed", "packaged", "convenience food", "fast food",
+        "junk food", "ultra-processed", "preservatives", "additives",
+        "artificial", "refined", "instant", "frozen meal"
+    ],
+    "fish and seafood": [
+        "fish", "seafood", "salmon", "tuna", "omega-3", "marine",
+        "aquaculture", "fishing", "shellfish", "mercury", "sustainable fishing"
+    ],
+    "food safety": [
+        "food safety", "foodborne", "contamination", "bacteria",
+        "salmonella", "E. coli", "food poisoning", "hygiene",
+        "food handling", "expiration", "storage", "recall"
+    ],
+    
+    # AUDIENCE CATEGORY
+    "women": [
+        "women", "female", "woman", "maternal", "pregnancy",
+        "menopause", "gynecology", "breast health", "women's health"
+    ],
+    "men": [
+        "men", "male", "man", "prostate", "testosterone", "men's health",
+        "masculine", "paternal", "andrology"
+    ],
+    "children": [
+        "children", "child", "pediatric", "kids", "infant", "baby",
+        "toddler", "childhood", "development", "growth", "vaccination"
+    ],
+    "teenagers": [
+        "teenager", "teen", "adolescent", "youth", "puberty",
+        "teenage", "young adult", "high school", "college"
+    ],
+    "seniors": [
+        "senior", "elderly", "aging", "geriatric", "old age",
+        "retirement", "age-related", "longevity", "mature adult"
+    ],
+    "athletes": [
+        "athlete", "sports", "performance", "training", "competition",
+        "endurance", "strength", "recovery", "sports medicine"
+    ],
+    "families": [
+        "family", "household", "parent", "parenting", "family health",
+        "home", "domestic", "caregiving", "family planning"
+    ],
+    
+    # TRENDING CATEGORY
+    "gut health": [
+        "gut", "microbiome", "digestive", "intestinal", "probiotic",
+        "prebiotic", "gut bacteria", "digestive health", "IBS",
+        "gut-brain", "fermented", "fiber"
+    ],
+    "mental health": [
+        "mental health", "depression", "anxiety", "stress", "psychology",
+        "psychiatric", "mood", "emotional", "therapy", "counseling",
+        "mindfulness", "cognitive", "behavioral"
+    ],
+    "hormones": [
+        "hormone", "hormonal", "endocrine", "estrogen", "testosterone",
+        "cortisol", "insulin", "thyroid hormone", "growth hormone",
+        "hormone therapy", "hormone balance"
+    ],
+    "addiction": [
+        "addiction", "substance abuse", "dependency", "withdrawal",
+        "recovery", "rehabilitation", "alcohol", "drugs", "smoking",
+        "nicotine", "opioid", "treatment"
+    ],
+    "sleep health": [
+        "sleep", "sleep quality", "insomnia", "sleep disorder",
+        "circadian rhythm", "melatonin", "sleep hygiene", "rest",
+        "REM sleep", "sleep apnea"
+    ],
+    "sexual wellness": [
+        "sexual", "sexuality", "intimacy", "libido", "sexual health",
+        "reproductive", "contraception", "STD", "sexual dysfunction",
+        "relationship", "intimate"
+    ]
+}
+
+def get_enhanced_tag_conditions(tag: str) -> Tuple[str, List[str]]:
+    """
+    Enhanced tag matching using keywords, content analysis, and semantic matching
+    Returns SQL WHERE condition and parameters for better categorization
+    """
+    
+    # Get keywords for the requested tag
+    keywords = ENHANCED_KEYWORDS.get(tag.lower(), [])
+    
+    # Basic tag matching (existing logic)
+    tag_underscore = tag.replace(" ", "_")
+    conditions = []
+    params = []
+    
+    # 1. Exact tag matching (existing logic)
+    conditions.append('(LOWER(tags) LIKE LOWER(?) OR LOWER(tags) LIKE LOWER(?))')
+    params.extend([f'%"{tag}"%', f'%"{tag_underscore}"%'])
+    
+    # 2. Enhanced keyword matching if available
+    if keywords:
+        # Keyword matching in tags
+        keyword_conditions = []
+        for keyword in keywords[:8]:  # Limit to top 8 keywords for performance
+            keyword_conditions.append('LOWER(tags) LIKE LOWER(?)')
+            params.append(f'%{keyword.lower()}%')
+        
+        if keyword_conditions:
+            conditions.append(f'({" OR ".join(keyword_conditions)})')
+        
+        # Content-based matching (title and summary) for top keywords
+        content_conditions = []
+        for keyword in keywords[:4]:  # Top 4 keywords for content matching
+            content_conditions.append('(LOWER(title) LIKE LOWER(?) OR LOWER(summary) LIKE LOWER(?))')
+            params.extend([f'%{keyword.lower()}%', f'%{keyword.lower()}%'])
+        
+        if content_conditions:
+            conditions.append(f'({" OR ".join(content_conditions)})')
+    
+    # Combine all conditions with OR logic
+    final_condition = f'({" OR ".join(conditions)})'
+    
+    return final_condition, params
+
 # Simple connection pool
 class SQLiteConnectionPool:
     def __init__(self, database: str):
@@ -176,43 +422,32 @@ def get_articles_paginated_optimized(
                 logger.info(f"🔍 Filtering by category: '{category}' (case-insensitive)")
                 
             if tag:
-                # Since tags is stored as JSON array, we need to search within it
-                # Handle both frontend format (with spaces) and database format (with underscores)
-                tag_underscore = tag.replace(" ", "_")
+                # Use enhanced categorization system
+                enhanced_condition, enhanced_params = get_enhanced_tag_conditions(tag)
                 
-                # Special handling for "latest" - filter by recent date AND related terms
+                # Special handling for "latest" - add date filter
                 if tag.lower() == "latest":
-                    # For latest, we want articles from recent dates AND with latest-related tags
-                    # Use simpler date filtering that works with SQLite
-                    where_conditions.append("""(
-                        (LOWER(tags) LIKE LOWER(?) OR LOWER(tags) LIKE LOWER(?) OR 
-                         LOWER(tags) LIKE '%"breaking_news"%' OR LOWER(tags) LIKE '%"recent_developments"%' OR 
-                         LOWER(tags) LIKE '%"trending"%' OR LOWER(tags) LIKE '%"smartnews_aggregated"%') 
-                        AND (
-                            date LIKE '%2025-08%' OR 
-                            date LIKE '%Aug 2025%' OR
-                            date LIKE '%2025%'
-                        )
-                    )""")
-                    params.extend([f'%"{tag}"%', f'%"{tag_underscore}"%'])
-                    logger.info(f"🏷️ Filtering by LATEST tag with recent date filter (simplified)")
-                # Special handling for "lifestyle" - also search for related terms
-                elif tag.lower() == "lifestyle":
-                    where_conditions.append("(LOWER(tags) LIKE LOWER(?) OR LOWER(tags) LIKE LOWER(?) OR LOWER(tags) LIKE '%lifestyle_changes%' OR LOWER(tags) LIKE '%health_lifestyle%' OR LOWER(tags) LIKE '%wellness%')")
-                    params.extend([f'%"{tag}"%', f'%"{tag_underscore}"%'])
-                    logger.info(f"🏷️ Filtering by tag: '{tag}' (with related terms)")
+                    # Combine enhanced matching with date filtering
+                    date_condition = """(
+                        date LIKE '%2025-08%' OR 
+                        date LIKE '%Aug 2025%' OR
+                        date LIKE '%2025%'
+                    )"""
+                    final_condition = f"({enhanced_condition} AND {date_condition})"
+                    where_conditions.append(final_condition)
+                    params.extend(enhanced_params)
+                    logger.info(f"🏷️ Enhanced filtering for LATEST tag with {len(enhanced_params)} conditions + date filter")
                 else:
-                    where_conditions.append("(LOWER(tags) LIKE LOWER(?) OR LOWER(tags) LIKE LOWER(?))")
-                    params.extend([f'%"{tag}"%', f'%"{tag_underscore}"%'])
-                    logger.info(f"🏷️ Filtering by tag: '{tag}' (case-insensitive)")
+                    where_conditions.append(enhanced_condition)
+                    params.extend(enhanced_params)
+                    logger.info(f"🏷️ Enhanced filtering for '{tag}' with {len(enhanced_params)} conditions (tags + keywords + content)")
                 
             if subcategory:
-                # Treat subcategory as a tag since there's no separate subcategory column
-                # Handle both frontend format (with spaces) and database format (with underscores)
-                subcategory_underscore = subcategory.replace(" ", "_")
-                where_conditions.append("(LOWER(tags) LIKE LOWER(?) OR LOWER(tags) LIKE LOWER(?))")
-                params.extend([f'%"{subcategory}"%', f'%"{subcategory_underscore}"%'])
-                logger.info(f"🏷️ Filtering by subcategory as tag: '{subcategory}' (case-insensitive)")
+                # Use enhanced categorization for subcategory as well
+                enhanced_condition, enhanced_params = get_enhanced_tag_conditions(subcategory)
+                where_conditions.append(enhanced_condition)
+                params.extend(enhanced_params)
+                logger.info(f"🏷️ Enhanced filtering for subcategory '{subcategory}' with {len(enhanced_params)} conditions")
                 
             if start_date:
                 where_conditions.append("date >= ?")
