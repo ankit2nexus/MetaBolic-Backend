@@ -182,20 +182,20 @@ def get_articles_paginated_optimized(
                 
                 # Special handling for "latest" - filter by recent date AND related terms
                 if tag.lower() == "latest":
-                    # For latest, we want articles from the last 30 days AND with latest-related tags
+                    # For latest, we want articles from recent dates AND with latest-related tags
+                    # Use simpler date filtering that works with SQLite
                     where_conditions.append("""(
                         (LOWER(tags) LIKE LOWER(?) OR LOWER(tags) LIKE LOWER(?) OR 
                          LOWER(tags) LIKE '%"breaking_news"%' OR LOWER(tags) LIKE '%"recent_developments"%' OR 
                          LOWER(tags) LIKE '%"trending"%' OR LOWER(tags) LIKE '%"smartnews_aggregated"%') 
                         AND (
-                            date >= date('now', '-30 days') OR 
                             date LIKE '%2025-08%' OR 
                             date LIKE '%Aug 2025%' OR
                             date LIKE '%2025%'
                         )
                     )""")
                     params.extend([f'%"{tag}"%', f'%"{tag_underscore}"%'])
-                    logger.info(f"🏷️ Filtering by LATEST tag with recent date filter")
+                    logger.info(f"🏷️ Filtering by LATEST tag with recent date filter (simplified)")
                 # Special handling for "lifestyle" - also search for related terms
                 elif tag.lower() == "lifestyle":
                     where_conditions.append("(LOWER(tags) LIKE LOWER(?) OR LOWER(tags) LIKE LOWER(?) OR LOWER(tags) LIKE '%lifestyle_changes%' OR LOWER(tags) LIKE '%health_lifestyle%' OR LOWER(tags) LIKE '%wellness%')")
@@ -226,39 +226,16 @@ def get_articles_paginated_optimized(
             if where_conditions:
                 where_clause = "WHERE " + " AND ".join(where_conditions)
             
-            # Order clause - handle mixed date formats properly and prioritize recent dates
+            # Order clause - simplified and reliable date sorting
             if sort_by.upper() == "DESC":
-                # For descending order, prioritize 2025 dates first, then use proper date ordering
+                # For descending order, prioritize 2025 dates first with simpler logic
                 order_clause = """ORDER BY 
                     CASE 
                         WHEN date LIKE '%2025%' THEN 1 
                         WHEN date LIKE '%2024%' THEN 2 
                         ELSE 3 
                     END ASC,
-                    CASE 
-                        WHEN date LIKE '%-%-%T%' THEN datetime(substr(date, 1, 19))
-                        WHEN date LIKE '%,%' THEN datetime(
-                            CASE 
-                                WHEN substr(date, -4, 4) || '-' ||
-                                     CASE substr(date, instr(date, ' ') + 1, 3)
-                                         WHEN 'Jan' THEN '01'
-                                         WHEN 'Feb' THEN '02'
-                                         WHEN 'Mar' THEN '03'
-                                         WHEN 'Apr' THEN '04'
-                                         WHEN 'May' THEN '05'
-                                         WHEN 'Jun' THEN '06'
-                                         WHEN 'Jul' THEN '07'
-                                         WHEN 'Aug' THEN '08'
-                                         WHEN 'Sep' THEN '09'
-                                         WHEN 'Oct' THEN '10'
-                                         WHEN 'Nov' THEN '11'
-                                         WHEN 'Dec' THEN '12'
-                                     END || '-' ||
-                                     printf('%02d', substr(date, instr(date, ' ') + 5, 2))
-                            END
-                        )
-                        ELSE date 
-                    END DESC, 
+                    date DESC, 
                     id DESC"""
             else:
                 order_clause = f"ORDER BY date ASC, id ASC"
