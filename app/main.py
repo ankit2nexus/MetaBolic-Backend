@@ -386,17 +386,61 @@ def health_check():
 
 @v1_router.get("/scheduler/status")
 def get_scheduler_status():
-    """Get status of background scheduler"""
+    """Get status of background scheduler - Cloud optimized"""
     try:
         jobs = health_scheduler.get_scheduled_jobs()
+        
+        # Get database stats for monitoring
+        import sqlite3
+        from pathlib import Path
+        
+        db_path = Path(__file__).parent.parent / "data" / "articles.db"
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM articles")
+            total_articles = cursor.fetchone()[0]
+            
+            # Get articles from last 24 hours
+            cursor.execute("SELECT COUNT(*) FROM articles WHERE created_at >= datetime('now', '-1 day')")
+            recent_articles = cursor.fetchone()[0]
+            
+            # Get latest article date
+            cursor.execute("SELECT MAX(date) FROM articles")
+            latest_article_date = cursor.fetchone()[0]
+        
         return {
             "status": "running" if health_scheduler.is_running else "stopped",
             "timestamp": datetime.now().isoformat(),
+            "cloud_environment": health_scheduler.is_cloud,
             "scheduled_jobs": jobs,
-            "total_jobs": len(jobs)
+            "total_jobs": len(jobs),
+            "database_stats": {
+                "total_articles": total_articles,
+                "articles_last_24h": recent_articles,
+                "latest_article_date": latest_article_date
+            },
+            "next_scraping": next((j['next_run'] for j in jobs if j['id'] == 'health_scraper'), None),
+            "last_keepalive": datetime.now().isoformat() if health_scheduler.is_cloud else None
         }
     except Exception as e:
         logger.error(f"Error getting scheduler status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@v1_router.post("/scheduler/trigger")
+async def trigger_scraper_manually():
+    """Manually trigger the scraper - For testing and emergency updates"""
+    try:
+        logger.info("📞 Manual scraper trigger requested via API")
+        result = await health_scheduler.run_scraper_now()
+        
+        return {
+            "status": "success",
+            "timestamp": datetime.now().isoformat(),
+            "result": result,
+            "message": "Scraper triggered successfully"
+        }
+    except Exception as e:
+        logger.error(f"Error triggering manual scraper: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @v1_router.post("/scheduler/trigger-scraper")

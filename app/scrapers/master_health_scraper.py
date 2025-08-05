@@ -107,18 +107,23 @@ class MasterHealthScraper:
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS articles (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    date TEXT,
                     title TEXT NOT NULL,
-                    description TEXT,
+                    authors TEXT,
+                    summary TEXT,
                     url TEXT UNIQUE NOT NULL,
-                    published_date TEXT,
-                    source TEXT,
-                    category TEXT,
+                    categories TEXT,
                     tags TEXT,
-                    scraped_at TEXT DEFAULT CURRENT_TIMESTAMP,
-                    image_url TEXT,
-                    content TEXT,
-                    author TEXT,
-                    read_time INTEGER DEFAULT 3
+                    source TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    priority INTEGER DEFAULT 1,
+                    url_health TEXT,
+                    url_accessible INTEGER DEFAULT 1,
+                    last_checked TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    subcategory TEXT,
+                    news_score REAL DEFAULT 0.0,
+                    trending_score REAL DEFAULT 0.0,
+                    content_quality_score REAL DEFAULT 0.0
                 )
             """)
             conn.commit()
@@ -376,19 +381,18 @@ class MasterHealthScraper:
                 try:
                     conn.execute("""
                         INSERT OR IGNORE INTO articles 
-                        (title, summary, url, published_date, source, category, tags, image_url, author, read_time)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        (title, summary, url, date, source, categories, tags, url_health, authors)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, (
                         article['title'],
                         article['summary'],  # Changed from 'description' to 'summary'
                         article['url'],
-                        article['published_date'],
+                        article['published_date'],  # Maps to 'date' column
                         article['source'],
-                        article['category'],
+                        article['category'],  # Maps to 'categories' column
                         article['tags'],
-                        article['image_url'],
-                        article['author'],
-                        article['read_time']
+                        article.get('image_url', ''),  # Maps to 'url_health' column for images
+                        article.get('author', '')  # Maps to 'authors' column
                     ))
                     
                     if conn.total_changes > 0:

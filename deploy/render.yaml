@@ -14,8 +14,17 @@ services:
         value: 1
       - key: RENDER
         value: true
+      - key: LOG_LEVEL
+        value: INFO
+      - key: SCRAPE_INTERVAL_HOURS
+        value: 4
       - key: CORS_ORIGINS
         value: "https://metabolical.in,https://www.metabolical.in,https://localhost:3000,http://localhost:3000,https://localhost:5173,http://localhost:5173"
     healthCheckPath: /api/v1/health
     plan: starter  # Change to 'standard' or higher for production
     autoDeploy: true
+    # Health check configuration
+    healthCheckTimeout: 30
+    healthCheckInterval: 300  # Check every 5 minutes
+    # Automatic restarts if unhealthy
+    restartPolicy: always
