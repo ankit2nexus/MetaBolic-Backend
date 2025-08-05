@@ -1,144 +1,152 @@
-# 🏥 Metabolical Backend API - Clean & Simplified
+# 🏥 Metabolical Backend API
 
-A FastAPI-based backend for health articles with search, categorization, and pagination. 
-**Simplified project structure for easy understanding and maintenance.**
+A FastAPI-based backend service for health articles with intelligent search, categorization, and real-time scraping capabilities. Built with performance and scalability in mind.
+
+## ✨ Features
+
+- 🔍 **Advanced Search**: Full-text search across articles with intelligent ranking
+- 📂 **Smart Categorization**: Automated categorization into health domains
+- 🕷️ **Multi-Source Scraping**: Aggregates content from multiple health news sources
+- ⚡ **High Performance**: SQLite with connection pooling and in-memory caching
+- 📄 **Pagination**: Efficient pagination for large datasets
+- 🌐 **CORS Enabled**: Ready for frontend integration
+- 📊 **RESTful API**: Clean, documented endpoints following REST principles
+- 🔧 **Easy Deployment**: Simple scripts for local development and production
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.8+
+- pip package manager
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd metabolical-backend
+   ```
+
+2. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Start the server**
+   
+   **Local Development:**
+   ```bash
+   python start.py --port 8000
+   ```
+   
+   **With Debug Mode:**
+   ```bash
+   python start.py --debug --port 8000
+   ```
+   
+   **Production Deployment:**
+   ```bash
+   python start.py --port 80 --public-url https://metabolical.in
+   ```
+
+4. **Access the API**
+   - **Local**: http://localhost:8000
+   - **Swagger Docs**: http://localhost:8000/docs
+   - **ReDoc**: http://localhost:8000/redoc
+
+5. **Stop the server**
+   ```bash
+   python stop.py
+   ```
 
 ## 📁 Project Structure
 
 ```
 metabolical-backend/
-├── app/                           # 🚀 Main application code
-│   ├── main.py                   # FastAPI application
-│   ├── utils.py                  # Database utilities
-│   ├── url_validator.py          # URL validation utilities
-│   └── __init__.py               # Package initialization
-├── config/                       # ⚙️ Configuration files
-│   ├── health_categories.yml     # Unified health category classification keywords
-│   ├── scraper_config.py         # Scraper configuration
-│   └── __init__.py               # Package initialization
-├── data/                         # 💾 Database and cache
-│   └── articles.db               # SQLite database
-├── scrapers/                     # 🕷️ Web scrapers
-│   ├── comprehensive_news_scraper.py     # Main news scraper
-│   ├── python313_compatible_scraper.py  # Python 3.13 compatible scraper
-│   ├── simple_health_scraper.py         # Simple health articles scraper
-│   ├── smart_news_aggregator.py         # Smart news aggregation
-│   ├── social_media_scraper.py          # Social media content scraper
-│   └── __init__.py                      # Package initialization
-├── docs/                         # 📚 Documentation
-│   ├── ALL_ENDPOINTS.md          # Complete API endpoints reference
-│   ├── Endpoint.md               # Endpoint documentation
-│   ├── PERFORMANCE_IMPROVEMENTS.md # Performance optimization guide
-│   ├── SEARCH_ENDPOINTS.md       # Search functionality documentation
-│   └── SMARTNEWS_AGGREGATION.md  # Smart news aggregation documentation
-├── start.py                      # 🎯 Simple startup script
-├── stop.py                       # 🛑 Server shutdown script
-├── requirements.txt              # 📦 Project dependencies
-└── README.md                     # 📖 This file
+├── app/
+│   ├── main.py                 # FastAPI application
+│   ├── utils.py               # Utility functions
+│   ├── url_validator.py       # URL validation logic
+│   └── __init__.py
+├── config/
+│   ├── health_categories.yml  # Category definitions
+│   ├── scraper_config.py     # Scraper configurations
+│   └── __init__.py
+├── data/
+│   └── articles.db           # SQLite database
+├── scrapers/
+│   ├── comprehensive_news_scraper.py
+│   ├── python313_compatible_scraper.py
+│   ├── simple_health_scraper.py
+│   ├── smart_news_aggregator.py
+│   ├── social_media_scraper.py
+│   └── __init__.py
+├── docs/
+│   ├── ALL_ENDPOINTS.md
+│   ├── Endpoint.md
+│   ├── PERFORMANCE_IMPROVEMENTS.md
+│   ├── SEARCH_ENDPOINTS.md
+│   └── SMARTNEWS_AGGREGATION.md
+├── start.py                  # Server startup script
+├── stop.py                   # Server shutdown script
+├── requirements.txt          # Python dependencies
+└── README.md
 ```
-
-## 🚀 Quick Start
-
-### 1. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 2. Configure for Public Deployment (Optional)
-```bash
-# Copy example environment file
-cp .env.example .env
-
-# Edit .env file with your configuration
-# Set PORT=80 for standard web port
-# Set PUBLIC_URL=https://yourdomain.com for your domain
-```
-
-### 3. Start the Server
-
-#### Local Development:
-```bash
-# Normal mode (default port 8000)
-python start.py --port 8000
-
-# Debug mode with detailed logging
-python start.py --debug --port 8000
-```
-
-#### Public Deployment:
-```bash
-# Production mode on port 80
-python start.py --port 80 --public-url https://yourdomain.com
-
-# With environment variables
-PORT=80 PUBLIC_URL=https://yourdomain.com python start.py
-```
-
-### 4. Stop the Server
-```bash
-# Use the stop script to gracefully shutdown
-python stop.py
-```
-
-### 5. Access the API
-
-#### Local Development:
-- **API Base URL**: http://localhost:8000
-- **Interactive Docs**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-
-#### Public Deployment:
-- **API Base URL**: https://yourdomain.com
-- **Interactive Docs**: https://yourdomain.com/docs
-- **ReDoc**: https://yourdomain.com/redoc
 
 ## 📋 API Endpoints
 
-All endpoints are under `/api/v1` prefix:
+All endpoints use the `/api/v1` prefix:
 
 ### Core Endpoints
-- `GET /api/v1/health` - Health check
-- `GET /api/v1/stats` - API statistics
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/health` | Health check endpoint |
+| GET | `/api/v1/stats` | API statistics and metrics |
 
-### Article Endpoints
-- `GET /api/v1/articles/` - Get paginated articles
-- `GET /api/v1/articles/latest` - Get latest articles
-- `GET /api/v1/articles/search?q={query}` - **Search articles** (primary)
-- `GET /api/v1/articles/{category}` - Get articles by category
-- `GET /api/v1/articles/{category}/{subcategory}` - Get articles by subcategory
+### Articles
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/articles/` | Get all articles with pagination |
+| GET | `/api/v1/articles/latest` | Get latest articles |
+| GET | `/api/v1/articles/search?q={query}` | Search articles by query |
+| GET | `/api/v1/articles/{category}` | Get articles by category |
+| GET | `/api/v1/articles/{category}/{subcategory}` | Get articles by category and subcategory |
 
-### Category & Organization
-- `GET /api/v1/categories` - Get all categories
-- `GET /api/v1/search?q={query}` - Search articles (legacy)
+### Categories & Legacy
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/categories` | Get all available categories |
+| GET | `/api/v1/search?q={query}` | Legacy search endpoint |
 
-## 🔍 Search Examples
+## 🔍 Usage Examples
 
+### Search for Articles
 ```bash
-# Search for diabetes articles
-curl "http://localhost:8000/api/v1/articles/search?q=diabetes&limit=10"
+# Search for diabetes-related articles
+curl "https://metabolical.in/api/v1/articles/search?q=diabetes&limit=10"
 
-# Get articles by category
-curl "http://localhost:8000/api/v1/articles/diseases?page=1&limit=20"
+# Get articles from diseases category
+curl "https://metabolical.in/api/v1/articles/diseases?page=1&limit=20"
 
 # Get latest articles
-curl "http://localhost:8000/api/v1/articles/latest?limit=5"
+curl "https://metabolical.in/api/v1/articles/latest?limit=5"
 ```
 
-## 📊 Response Format
-
+### Sample Response
 ```json
 {
   "articles": [
     {
       "id": 123,
-      "title": "Understanding Diabetes",
-      "summary": "A comprehensive guide...",
-      "url": "https://source.com/article",
-      "source": "Health News",
-      "date": "2025-07-30T10:00:00",
+      "title": "Understanding Diabetes: A Comprehensive Guide",
+      "summary": "Learn about diabetes types, symptoms, and management strategies...",
+      "url": "https://healthsource.com/diabetes-guide",
+      "source": "Health News Daily",
+      "date": "2025-07-30T10:00:00Z",
       "category": "diseases",
       "subcategory": "diabetes",
-      "tags": ["health", "diabetes"]
+      "tags": ["health", "diabetes", "blood-sugar", "management"]
     }
   ],
   "total": 150,
@@ -150,84 +158,135 @@ curl "http://localhost:8000/api/v1/articles/latest?limit=5"
 }
 ```
 
-## 🛠️ Development
+## 📊 Available Categories
 
-### Project Structure Benefits
-✅ **Single main.py** - No confusion between multiple main files  
-✅ **Single utils.py** - All utilities in one place  
-✅ **Clear directories** - Organized by function  
-✅ **Simple startup** - One command to run  
-✅ **Clean dependencies** - Only essential packages  
-✅ **Multiple scrapers** - Comprehensive data collection  
-✅ **Complete documentation** - Well-documented API endpoints  
+- **diseases** - Medical conditions and disorders
+- **news** - Latest health news and updates
+- **solutions** - Treatment options and remedies
+- **food** - Nutrition and dietary information
+- **audience** - Targeted health advice for specific groups
+- **blogs_and_opinions** - Expert opinions and personal experiences
 
-### Available Scrapers
-- **comprehensive_news_scraper.py** - Main news article scraper
-- **python313_compatible_scraper.py** - Python 3.13 compatible scraper
-- **simple_health_scraper.py** - Focused health article scraper
-- **smart_news_aggregator.py** - Intelligent news aggregation
-- **social_media_scraper.py** - Social media content extraction
+## ⚙️ Configuration
 
-### Configuration
-- **Database**: SQLite database in `data/articles.db`
-- **Categories**: Configured in `config/health_categories.yml`
-- **Scraper Settings**: Configured in `config/scraper_config.py`
-- **Logging**: INFO level by default (DEBUG with --debug flag)
-- **CORS**: Enabled for all origins (development)
+### Environment Variables
+Create a `.env` file for production deployment:
+```env
+PORT=80
+PUBLIC_URL=https://metabolical.in
+DEBUG=false
+```
 
-## 🧪 Testing
+### Category Configuration
+Edit `config/health_categories.yml` to customize article categorization:
+```yaml
+diseases:
+  - diabetes
+  - hypertension
+  - cancer
+news:
+  - breaking
+  - research
+  - updates
+```
 
-For comprehensive API testing and verification, refer to the documentation:
-- **Complete Endpoints**: See `docs/ALL_ENDPOINTS.md` for all available endpoints
-- **Search Documentation**: Check `docs/SEARCH_ENDPOINTS.md` for search functionality
-- **Performance Guide**: Review `docs/PERFORMANCE_IMPROVEMENTS.md` for optimization details
+## 🔧 Development
 
+### Running Tests
 ```bash
-# Test the API manually
+# Health check
 curl "http://localhost:8000/api/v1/health"
+
+# Get statistics
 curl "http://localhost:8000/api/v1/stats"
 ```
 
-## 📝 Available Categories
+### Debug Mode
+Enable detailed logging:
+```bash
+python start.py --debug --port 8000
+```
 
-- `diseases` - Medical conditions and health issues
-- `news` - Health news and recent developments  
-- `solutions` - Treatment and prevention methods
-- `food` - Nutrition and dietary information
-- `audience` - Target demographic content
-- `blogs_and_opinions` - Expert opinions and patient stories
-
-## 🔧 Troubleshooting
-
-### Common Issues
-
-1. **Database not found**: Make sure `data/articles.db` exists
-2. **Port already in use**: Change port in `start.py` or kill existing process with `python stop.py`
-3. **Import errors**: Install dependencies with `pip install -r requirements.txt`
-4. **Scraper issues**: Check `config/scraper_config.py` for scraper settings
-
-### Logs
-Check the console output for detailed error messages and performance information.
-
-### Graceful Shutdown
-Use `python stop.py` to properly shutdown the server and clean up resources.
-
-## 📚 Documentation
-
-For detailed information about the API, please refer to:
-- **`docs/ALL_ENDPOINTS.md`** - Complete list of all API endpoints
-- **`docs/SEARCH_ENDPOINTS.md`** - Search functionality documentation  
-- **`docs/PERFORMANCE_IMPROVEMENTS.md`** - Performance optimization guide
-- **`docs/SMARTNEWS_AGGREGATION.md`** - Smart news aggregation details
+### Adding New Scrapers
+1. Create a new scraper in `scrapers/` directory
+2. Follow the existing scraper patterns
+3. Update `scraper_config.py` to include the new scraper
 
 ## 📈 Performance Features
 
-- ✅ SQLite connection pooling
-- ✅ Database indexes for faster queries
-- ✅ In-memory caching for frequently accessed data
-- ✅ Optimized pagination
-- ✅ Gzip compression for responses
+- **SQLite Connection Pooling**: Optimized database connections
+- **Indexed Fields**: Fast query performance on searchable fields
+- **In-Memory Caching**: Frequently accessed data cached for speed
+- **Gzip Compression**: Reduced response payload sizes
+- **Paginated Responses**: Efficient handling of large datasets
+- **Asynchronous Processing**: Non-blocking request handling
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| `articles.db missing` | Check if `data/` directory exists and is writable |
+| Port conflict | Use `python stop.py` or change port number |
+| Dependency errors | Run `pip install -r requirements.txt` |
+| Scraper failures | Check `scraper_config.py` and network connectivity |
+
+### Logs & Debugging
+- Run with `--debug` flag for detailed logs
+- Check console output for error messages
+- Monitor API response times and error rates
+
+## 🚀 Deployment
+
+### Production Deployment
+```bash
+# Set environment variables
+export PORT=80
+export PUBLIC_URL=https://metabolical.in
+
+# Start the server
+python start.py --port 80 --public-url https://metabolical.in
+```
+
+### Docker Deployment (Optional)
+```dockerfile
+FROM python:3.9-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+EXPOSE 8000
+CMD ["python", "start.py", "--port", "8000"]
+```
+
+## 📚 Documentation
+
+For detailed API documentation, visit:
+- [All Endpoints](docs/ALL_ENDPOINTS.md)
+- [Search Endpoints](docs/SEARCH_ENDPOINTS.md)
+- [Performance Improvements](docs/PERFORMANCE_IMPROVEMENTS.md)
+- [Smart News Aggregation](docs/SMARTNEWS_AGGREGATION.md)
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🆘 Support
+
+For issues and questions:
+- Create an issue on GitHub
+- Check the documentation in the `docs/` folder
+- Review the troubleshooting section above
 
 ---
 
-**🎯 This project provides a clean, well-documented health articles API with comprehensive scraping capabilities and excellent documentation for easy understanding and maintenance.**
+**Metabolical API** - Delivering clean, scalable health article aggregation with intelligent categorization and lightning-fast search capabilities.
