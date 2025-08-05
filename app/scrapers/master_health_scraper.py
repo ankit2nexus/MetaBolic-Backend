@@ -78,27 +78,28 @@ class MasterHealthScraper:
             "public health", "food safety", "sleep disorder", "immunity", "preventive care"
         ]
         
-        # Unified RSS sources
+        # Unified RSS sources - Updated with working URLs
         self.rss_sources = [
             # WHO & Institutional
-            {"name": "WHO", "url": "https://www.who.int/rss-feeds/news-english.xml", "category": "public_health"},
-            {"name": "NIH", "url": "https://www.nih.gov/news-events/news-releases/rss", "category": "medical_research"},
-            {"name": "CDC", "url": "https://tools.cdc.gov/podcasts/rss/health.xml", "category": "public_health"},
+            {"name": "WHO Health News", "url": "https://www.who.int/rss-feeds/news-english.xml", "category": "public_health"},
+            {"name": "NIH News", "url": "https://www.nih.gov/news-events/news-releases/rss.xml", "category": "medical_research"},
             
-            # Health Websites
-            {"name": "WebMD", "url": "https://www.webmd.com/rss/rss.aspx?RSSSource=RSS_PUBLIC", "category": "health_info"},
-            {"name": "Mayo Clinic", "url": "https://newsnetwork.mayoclinic.org/feed/", "category": "medical_advice"},
-            {"name": "Healthline", "url": "https://www.healthline.com/rss", "category": "health_info"},
-            
-            # Major News Outlets - Health Sections
-            {"name": "Reuters Health", "url": "https://feeds.reuters.com/reuters/health", "category": "health_news"},
-            {"name": "CNN Health", "url": "http://rss.cnn.com/rss/cnn_health.rss", "category": "health_news"},
+            # Major News Outlets - Health Sections (Working URLs)
             {"name": "BBC Health", "url": "http://feeds.bbci.co.uk/news/health/rss.xml", "category": "health_news"},
-            {"name": "AP Health", "url": "https://apnews.com/apf-health", "category": "health_news"},
+            {"name": "Reuters Health", "url": "https://www.reutersagency.com/feed/?best-topics=health&post_type=best", "category": "health_news"},
+            {"name": "AP Health", "url": "https://feeds.apnews.com/rss/apf-health", "category": "health_news"},
             
-            # Nutrition & Lifestyle
-            {"name": "Nutrition.gov", "url": "https://www.nutrition.gov/rss.xml", "category": "nutrition"},
+            # Medical Journals and Professional Sources
+            {"name": "Medical Journal", "url": "https://www.news-medical.net/tag/feed/Health.aspx", "category": "medical_research"},
             {"name": "Harvard Health", "url": "https://www.health.harvard.edu/blog/feed", "category": "medical_advice"},
+            {"name": "The Hindu Health", "url": "https://www.thehindu.com/sci-tech/health/feeder/default.rss", "category": "health_news"},
+            
+            # Health Information Sources
+            {"name": "Healthline News", "url": "https://www.healthline.com/health-news/rss", "category": "health_info"},
+            {"name": "Medical News Today", "url": "https://www.medicalnewstoday.com/rss", "category": "health_info"},
+            
+            # Government Health Sources
+            {"name": "FDA News", "url": "https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/news/rss.xml", "category": "public_health"},
         ]
 
     def init_database(self):
@@ -129,7 +130,7 @@ class MasterHealthScraper:
             conn.commit()
 
     def scrape_rss_source(self, source: Dict) -> List[Dict]:
-        """Scrape a single RSS source"""
+        """Scrape a single RSS source with enhanced error handling"""
         articles = []
         try:
             logger.info(f"Scraping {source['name']}...")
@@ -155,8 +156,19 @@ class MasterHealthScraper:
                 articles.extend(self._manual_rss_parse(source))
                 
         except Exception as e:
-            logger.error(f"Failed to scrape {source['name']}: {e}")
+            error_msg = str(e)
+            if "404" in error_msg or "403" in error_msg or "Not Found" in error_msg or "Forbidden" in error_msg:
+                logger.warning(f"⚠️ {source['name']} feed is currently unavailable (will retry next scrape): {error_msg}")
+            elif "Name or service not known" in error_msg or "Failed to resolve" in error_msg:
+                logger.warning(f"⚠️ Network issue accessing {source['name']} (will retry next scrape): DNS resolution failed")
+            else:
+                logger.error(f"❌ Failed to scrape {source['name']}: {e}")
         
+        if articles:
+            logger.info(f"✅ Successfully scraped {len(articles)} articles from {source['name']}")
+        else:
+            logger.warning(f"⚠️ No articles found for {source['name']} (source may be temporarily unavailable)")
+            
         return articles
 
     def _parse_rss_entry(self, entry, source: Dict) -> Optional[Dict]:
@@ -203,10 +215,17 @@ class MasterHealthScraper:
             return None
 
     def _manual_rss_parse(self, source: Dict) -> List[Dict]:
-        """Manual RSS parsing for sources where feedparser fails"""
+        """Manual RSS parsing for sources where feedparser fails - Enhanced"""
         articles = []
         try:
-            response = self.session.get(source['url'], timeout=30)
+            # Add timeout and better headers
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'application/rss+xml, application/xml, text/xml',
+                'Accept-Language': 'en-US,en;q=0.9',
+            }
+            
+            response = self.session.get(source['url'], timeout=30, headers=headers)
             response.raise_for_status()
             
             # Simple XML parsing for basic RSS structure
@@ -216,11 +235,28 @@ class MasterHealthScraper:
             item_pattern = r'<item>(.*?)</item>'
             items = re.findall(item_pattern, content, re.DOTALL | re.IGNORECASE)
             
+            if not items:
+                # Try alternative RSS structures
+                item_pattern = r'<entry>(.*?)</entry>'
+                items = re.findall(item_pattern, content, re.DOTALL | re.IGNORECASE)
+            
             for item in items[:20]:  # Limit to 20 articles
                 title_match = re.search(r'<title[^>]*>(.*?)</title>', item, re.DOTALL | re.IGNORECASE)
                 link_match = re.search(r'<link[^>]*>(.*?)</link>', item, re.DOTALL | re.IGNORECASE)
                 desc_match = re.search(r'<description[^>]*>(.*?)</description>', item, re.DOTALL | re.IGNORECASE)
                 date_match = re.search(r'<pubDate[^>]*>(.*?)</pubDate>', item, re.DOTALL | re.IGNORECASE)
+                
+                # Try alternative date fields
+                if not date_match:
+                    date_match = re.search(r'<published[^>]*>(.*?)</published>', item, re.DOTALL | re.IGNORECASE)
+                if not date_match:
+                    date_match = re.search(r'<updated[^>]*>(.*?)</updated>', item, re.DOTALL | re.IGNORECASE)
+                
+                # Try alternative summary fields if description not found
+                if not desc_match:
+                    desc_match = re.search(r'<summary[^>]*>(.*?)</summary>', item, re.DOTALL | re.IGNORECASE)
+                if not desc_match:
+                    desc_match = re.search(r'<content[^>]*>(.*?)</content>', item, re.DOTALL | re.IGNORECASE)
                 
                 if title_match and link_match:
                     title = self._clean_html(title_match.group(1).strip())
@@ -231,7 +267,7 @@ class MasterHealthScraper:
                     if title and url:
                         article = {
                             'title': title,
-                            'summary': description[:500],  # Changed from 'description' to 'summary'
+                            'summary': description[:500],
                             'url': url,
                             'published_date': pub_date,
                             'source': source['name'],
@@ -247,10 +283,11 @@ class MasterHealthScraper:
                         if is_valid:
                             articles.append(article)
                         else:
-                            logger.warning(f"Skipping article with invalid URL in manual parse: {url} - {validation_info.get('error', 'Unknown error')}")
+                            logger.debug(f"Skipping article with invalid URL in manual parse: {url} - {validation_info.get('error', 'Unknown error')}")
         
         except Exception as e:
-            logger.error(f"Manual parsing failed for {source['name']}: {e}")
+            # Don't log as error - this is already a fallback method
+            logger.debug(f"Manual parsing failed for {source['name']}: {e}")
         
         return articles
 
