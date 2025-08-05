@@ -285,13 +285,25 @@ def get_articles_paginated_optimized(
                 summary = article.get('summary', '').strip()
                 
                 # Check if summary is empty, too short, or generic
+                # Don't process summaries that are already generated fallbacks
+                is_generated_fallback = (
+                    summary and (
+                        summary.startswith('Important health news:') or
+                        summary.startswith('Latest insights on') or
+                        summary.startswith('New medical research findings') or
+                        summary.startswith('COVID-19 updates and public health') or
+                        summary.startswith('Mental health insights') or
+                        'Stay informed with the latest from' in summary
+                    )
+                )
+                
                 needs_fallback = (
                     not summary or 
                     summary in ['', 'NULL', None] or 
-                    len(summary) < 20 or
-                    summary.lower() in ['recent developments', 'health news', 'breaking news'] or
+                    len(summary) < 10 or  # Reduced from 20 to 10 - less aggressive
+                    (summary.lower() in ['recent developments', 'health news', 'breaking news'] and not is_generated_fallback) or
                     'health article summary' in summary.lower()
-                )
+                ) and not is_generated_fallback  # Don't regenerate already generated summaries
                 
                 if needs_fallback:
                     # Generate a more meaningful fallback summary based on title and category

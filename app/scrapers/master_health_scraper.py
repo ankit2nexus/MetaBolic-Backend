@@ -25,7 +25,18 @@ import logging
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 from urllib.parse import urljoin, urlparse, quote_plus
-import feedparser
+
+# Handle Python 3.13 compatibility
+try:
+    import feedparser
+    FEEDPARSER_AVAILABLE = True
+except ImportError as e:
+    if "cgi" in str(e):
+        print("⚠️ Python 3.13 detected - feedparser not compatible, using fallback")
+        FEEDPARSER_AVAILABLE = False
+    else:
+        raise e
+
 from bs4 import BeautifulSoup
 
 # Add project root to path
@@ -118,19 +129,24 @@ class MasterHealthScraper:
         try:
             logger.info(f"Scraping {source['name']}...")
             
-            # Try feedparser first
-            try:
-                feed = feedparser.parse(source['url'])
-                if not feed.entries:
-                    raise Exception("No entries found")
-                    
-                for entry in feed.entries[:20]:  # Limit to 20 articles per source
-                    article = self._parse_rss_entry(entry, source)
-                    if article:
-                        articles.append(article)
+            # Try feedparser first (if available)
+            if FEEDPARSER_AVAILABLE:
+                try:
+                    feed = feedparser.parse(source['url'])
+                    if not feed.entries:
+                        raise Exception("No entries found")
                         
-            except Exception as e:
-                logger.warning(f"Feedparser failed for {source['name']}: {e}, trying manual parsing")
+                    for entry in feed.entries[:20]:  # Limit to 20 articles per source
+                        article = self._parse_rss_entry(entry, source)
+                        if article:
+                            articles.append(article)
+                            
+                except Exception as e:
+                    logger.warning(f"Feedparser failed for {source['name']}: {e}, trying manual parsing")
+                    articles.extend(self._manual_rss_parse(source))
+            else:
+                # Use manual parsing when feedparser is not available (Python 3.13)
+                logger.info(f"Using manual RSS parsing for {source['name']} (Python 3.13 compatibility)")
                 articles.extend(self._manual_rss_parse(source))
                 
         except Exception as e:
@@ -236,6 +252,11 @@ class MasterHealthScraper:
     def scrape_google_news(self) -> List[Dict]:
         """Scrape Google News for health topics"""
         articles = []
+        
+        # Skip Google News if feedparser is not available
+        if not FEEDPARSER_AVAILABLE:
+            logger.info("Skipping Google News scraping (feedparser not available in Python 3.13)")
+            return articles
         
         for keyword in self.health_keywords[:10]:  # Limit keywords
             try:
