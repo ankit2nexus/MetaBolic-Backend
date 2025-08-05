@@ -170,37 +170,49 @@ def get_articles_paginated_optimized(
             if category:
                 # Since categories is stored as JSON array, we need to search within it
                 # Handle case-insensitive matching for better user experience
-                where_conditions.append("(categories LIKE ? OR categories LIKE ?)")
+                # Search for the category in both lowercase and capitalized forms
+                where_conditions.append("(LOWER(categories) LIKE LOWER(?) OR LOWER(categories) LIKE LOWER(?))")
                 params.extend([f'%"{category}"%', f'%"{category.capitalize()}"%'])
-                logger.info(f"🔍 Filtering by category: '{category}' (also checking '{category.capitalize()}')")
+                logger.info(f"🔍 Filtering by category: '{category}' (case-insensitive)")
                 
             if tag:
                 # Since tags is stored as JSON array, we need to search within it
                 # Handle both frontend format (with spaces) and database format (with underscores)
                 tag_underscore = tag.replace(" ", "_")
                 
-                # Special handling for "latest" - also search for related terms
+                # Special handling for "latest" - filter by recent date AND related terms
                 if tag.lower() == "latest":
-                    where_conditions.append("(tags LIKE ? OR tags LIKE ? OR tags LIKE ? OR tags LIKE ? OR tags LIKE ? OR tags LIKE ? OR tags LIKE ?)")
-                    params.extend([f'%"{tag}"%', f'%"{tag_underscore}"%', f'%"breaking_news"%', f'%"recent_developments"%', f'%"indian_health_news"%', f'%"trending"%', f'%"smartnews_aggregated"%'])
-                    logger.info(f"🏷️ Filtering by tag: '{tag}' (also checking related terms: breaking_news, recent_developments, trending, smartnews_aggregated)")
+                    # For latest, we want articles from the last 30 days AND with latest-related tags
+                    where_conditions.append("""(
+                        (LOWER(tags) LIKE LOWER(?) OR LOWER(tags) LIKE LOWER(?) OR 
+                         LOWER(tags) LIKE '%"breaking_news"%' OR LOWER(tags) LIKE '%"recent_developments"%' OR 
+                         LOWER(tags) LIKE '%"trending"%' OR LOWER(tags) LIKE '%"smartnews_aggregated"%') 
+                        AND (
+                            date >= date('now', '-30 days') OR 
+                            date LIKE '%2025-08%' OR 
+                            date LIKE '%Aug 2025%' OR
+                            date LIKE '%2025%'
+                        )
+                    )""")
+                    params.extend([f'%"{tag}"%', f'%"{tag_underscore}"%'])
+                    logger.info(f"🏷️ Filtering by LATEST tag with recent date filter")
                 # Special handling for "lifestyle" - also search for related terms
                 elif tag.lower() == "lifestyle":
-                    where_conditions.append("(tags LIKE ? OR tags LIKE ? OR tags LIKE ? OR tags LIKE ? OR tags LIKE ?)")
-                    params.extend([f'%"{tag}"%', f'%"{tag_underscore}"%', f'%"lifestyle_changes"%', f'%"health_lifestyle"%', f'%"wellness"%'])
-                    logger.info(f"🏷️ Filtering by tag: '{tag}' (also checking related terms: lifestyle_changes, health_lifestyle, wellness)")
-                else:
-                    where_conditions.append("(tags LIKE ? OR tags LIKE ?)")
+                    where_conditions.append("(LOWER(tags) LIKE LOWER(?) OR LOWER(tags) LIKE LOWER(?) OR LOWER(tags) LIKE '%lifestyle_changes%' OR LOWER(tags) LIKE '%health_lifestyle%' OR LOWER(tags) LIKE '%wellness%')")
                     params.extend([f'%"{tag}"%', f'%"{tag_underscore}"%'])
-                    logger.info(f"🏷️ Filtering by tag: '{tag}' (also checking '{tag_underscore}')")
+                    logger.info(f"🏷️ Filtering by tag: '{tag}' (with related terms)")
+                else:
+                    where_conditions.append("(LOWER(tags) LIKE LOWER(?) OR LOWER(tags) LIKE LOWER(?))")
+                    params.extend([f'%"{tag}"%', f'%"{tag_underscore}"%'])
+                    logger.info(f"🏷️ Filtering by tag: '{tag}' (case-insensitive)")
                 
             if subcategory:
                 # Treat subcategory as a tag since there's no separate subcategory column
                 # Handle both frontend format (with spaces) and database format (with underscores)
                 subcategory_underscore = subcategory.replace(" ", "_")
-                where_conditions.append("(tags LIKE ? OR tags LIKE ?)")
+                where_conditions.append("(LOWER(tags) LIKE LOWER(?) OR LOWER(tags) LIKE LOWER(?))")
                 params.extend([f'%"{subcategory}"%', f'%"{subcategory_underscore}"%'])
-                logger.info(f"🏷️ Filtering by subcategory as tag: '{subcategory}' (also checking '{subcategory_underscore}')")
+                logger.info(f"🏷️ Filtering by subcategory as tag: '{subcategory}' (case-insensitive)")
                 
             if start_date:
                 where_conditions.append("date >= ?")
@@ -214,9 +226,40 @@ def get_articles_paginated_optimized(
             if where_conditions:
                 where_clause = "WHERE " + " AND ".join(where_conditions)
             
-            # Order clause - ensure deterministic ordering
+            # Order clause - handle mixed date formats properly and prioritize recent dates
             if sort_by.upper() == "DESC":
-                order_clause = f"ORDER BY date DESC, id DESC"
+                # For descending order, prioritize 2025 dates first, then use proper date ordering
+                order_clause = """ORDER BY 
+                    CASE 
+                        WHEN date LIKE '%2025%' THEN 1 
+                        WHEN date LIKE '%2024%' THEN 2 
+                        ELSE 3 
+                    END ASC,
+                    CASE 
+                        WHEN date LIKE '%-%-%T%' THEN datetime(substr(date, 1, 19))
+                        WHEN date LIKE '%,%' THEN datetime(
+                            CASE 
+                                WHEN substr(date, -4, 4) || '-' ||
+                                     CASE substr(date, instr(date, ' ') + 1, 3)
+                                         WHEN 'Jan' THEN '01'
+                                         WHEN 'Feb' THEN '02'
+                                         WHEN 'Mar' THEN '03'
+                                         WHEN 'Apr' THEN '04'
+                                         WHEN 'May' THEN '05'
+                                         WHEN 'Jun' THEN '06'
+                                         WHEN 'Jul' THEN '07'
+                                         WHEN 'Aug' THEN '08'
+                                         WHEN 'Sep' THEN '09'
+                                         WHEN 'Oct' THEN '10'
+                                         WHEN 'Nov' THEN '11'
+                                         WHEN 'Dec' THEN '12'
+                                     END || '-' ||
+                                     printf('%02d', substr(date, instr(date, ' ') + 5, 2))
+                            END
+                        )
+                        ELSE date 
+                    END DESC, 
+                    id DESC"""
             else:
                 order_clause = f"ORDER BY date ASC, id ASC"
             

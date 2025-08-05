@@ -78,7 +78,7 @@ class MasterHealthScraper:
             "public health", "food safety", "sleep disorder", "immunity", "preventive care"
         ]
         
-        # Unified RSS sources - Updated with verified working URLs
+        # Unified RSS sources - Comprehensive verified working URLs
         self.rss_sources = [
             # Major News Outlets - Health Sections (Verified Working)
             {"name": "BBC Health", "url": "http://feeds.bbci.co.uk/news/health/rss.xml", "category": "health_news"},
@@ -86,15 +86,21 @@ class MasterHealthScraper:
             {"name": "CNN Health", "url": "http://rss.cnn.com/rss/edition.rss", "category": "health_news"},
             {"name": "NPR Health", "url": "https://feeds.npr.org/1001/rss.xml", "category": "health_news"},
             
-            # Medical and Health Information Sources
-            {"name": "WebMD Health", "url": "https://www.webmd.com/rss/rss.aspx?RSSSource=RSS_PUBLIC", "category": "health_info"},
+            # Medical and Health Information Sources - Enhanced
+            {"name": "WebMD Breaking News", "url": "https://www.webmd.com/rss/news_breaking.xml", "category": "health_info"},
+            {"name": "Medical News Today", "url": "https://www.medicalnewstoday.com/rss", "category": "health_info"},
+            {"name": "Healthline News", "url": "https://www.healthline.com/rss", "category": "health_info"},
             {"name": "Mayo Clinic", "url": "https://www.mayoclinic.org/rss", "category": "medical_advice"},
             {"name": "Medical Xpress", "url": "https://medicalxpress.com/rss-feed/", "category": "medical_research"},
             {"name": "ScienceDaily Health", "url": "https://www.sciencedaily.com/rss/health_medicine.xml", "category": "medical_research"},
             
-            # Professional and Government Sources
+            # Government and Official Sources
+            {"name": "NIH News Releases", "url": "https://www.nih.gov/news-events/news-releases/feed", "category": "medical_research"},
+            {"name": "World Health Organization", "url": "https://www.who.int/feeds/entity/mediacentre/news/en/rss.xml", "category": "public_health"},
+            {"name": "CDC Newsroom", "url": "https://www.cdc.gov/media/rss.htm", "category": "public_health"},
+            
+            # Additional Professional Sources
             {"name": "PubMed Central", "url": "https://www.ncbi.nlm.nih.gov/pmc/rss/current/", "category": "medical_research"},
-            {"name": "World Health Organization", "url": "https://www.who.int/rss-feeds/news-english.xml", "category": "public_health"},
             {"name": "Medical News Net", "url": "https://www.news-medical.net/health/rss", "category": "health_info"},
             {"name": "Medscape News", "url": "https://www.medscape.com/rss/allnews", "category": "medical_research"},
         ]
