@@ -78,28 +78,25 @@ class MasterHealthScraper:
             "public health", "food safety", "sleep disorder", "immunity", "preventive care"
         ]
         
-        # Unified RSS sources - Updated with working URLs
+        # Unified RSS sources - Updated with verified working URLs
         self.rss_sources = [
-            # WHO & Institutional
-            {"name": "WHO Health News", "url": "https://www.who.int/rss-feeds/news-english.xml", "category": "public_health"},
-            {"name": "NIH News", "url": "https://www.nih.gov/news-events/news-releases/rss.xml", "category": "medical_research"},
-            
-            # Major News Outlets - Health Sections (Working URLs)
+            # Major News Outlets - Health Sections (Verified Working)
             {"name": "BBC Health", "url": "http://feeds.bbci.co.uk/news/health/rss.xml", "category": "health_news"},
-            {"name": "Reuters Health", "url": "https://www.reutersagency.com/feed/?best-topics=health&post_type=best", "category": "health_news"},
-            {"name": "AP Health", "url": "https://feeds.apnews.com/rss/apf-health", "category": "health_news"},
-            
-            # Medical Journals and Professional Sources
-            {"name": "Medical Journal", "url": "https://www.news-medical.net/tag/feed/Health.aspx", "category": "medical_research"},
-            {"name": "Harvard Health", "url": "https://www.health.harvard.edu/blog/feed", "category": "medical_advice"},
             {"name": "The Hindu Health", "url": "https://www.thehindu.com/sci-tech/health/feeder/default.rss", "category": "health_news"},
+            {"name": "CNN Health", "url": "http://rss.cnn.com/rss/edition.rss", "category": "health_news"},
+            {"name": "NPR Health", "url": "https://feeds.npr.org/1001/rss.xml", "category": "health_news"},
             
-            # Health Information Sources
-            {"name": "Healthline News", "url": "https://www.healthline.com/health-news/rss", "category": "health_info"},
-            {"name": "Medical News Today", "url": "https://www.medicalnewstoday.com/rss", "category": "health_info"},
+            # Medical and Health Information Sources
+            {"name": "WebMD Health", "url": "https://www.webmd.com/rss/rss.aspx?RSSSource=RSS_PUBLIC", "category": "health_info"},
+            {"name": "Mayo Clinic", "url": "https://www.mayoclinic.org/rss", "category": "medical_advice"},
+            {"name": "Medical Xpress", "url": "https://medicalxpress.com/rss-feed/", "category": "medical_research"},
+            {"name": "ScienceDaily Health", "url": "https://www.sciencedaily.com/rss/health_medicine.xml", "category": "medical_research"},
             
-            # Government Health Sources
-            {"name": "FDA News", "url": "https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/news/rss.xml", "category": "public_health"},
+            # Professional and Government Sources
+            {"name": "PubMed Central", "url": "https://www.ncbi.nlm.nih.gov/pmc/rss/current/", "category": "medical_research"},
+            {"name": "World Health Organization", "url": "https://www.who.int/rss-feeds/news-english.xml", "category": "public_health"},
+            {"name": "Medical News Net", "url": "https://www.news-medical.net/health/rss", "category": "health_info"},
+            {"name": "Medscape News", "url": "https://www.medscape.com/rss/allnews", "category": "medical_research"},
         ]
 
     def init_database(self):
